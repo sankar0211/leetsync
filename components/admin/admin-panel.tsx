@@ -8,6 +8,10 @@ import {
   deleteTeam,
   updateRotationOrder,
 } from "@/lib/actions/team";
+import {
+  adminResetDailyProblem,
+  adminSubmitDailyProblems,
+} from "@/lib/actions/problems";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,10 +49,53 @@ export function AdminPanel({
   const [selectedTransfer, setSelectedTransfer] = useState("");
   const [orderedMembers, setOrderedMembers] = useState(members);
 
+  // Manage Problems state
+  const [problem1Number, setProblem1Number] = useState("");
+  const [problem1Name, setProblem1Name] = useState("");
+  const [problem2Number, setProblem2Number] = useState("");
+  const [problem2Name, setProblem2Name] = useState("");
+
   const showMessage = (type: "success" | "error", text: string) => {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 4000);
   };
+
+  // ── Manage Problems ──
+  const handleResetProblems = () => {
+    if (
+      !confirm(
+        "Are you sure you want to reset today's problems? This will PERMANENTLY delete any completions logged today by your team!"
+      )
+    )
+      return;
+
+    startTransition(async () => {
+      const result = await adminResetDailyProblem(teamId);
+      if (result.error) {
+        showMessage("error", result.error);
+      } else {
+        showMessage("success", "Today's problems have been cleared");
+      }
+    });
+  };
+
+  const handleForceSetProblems = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    startTransition(async () => {
+      const formData = new FormData(e.currentTarget);
+      const result = await adminSubmitDailyProblems(teamId, { error: null }, formData);
+      if (result.error) {
+        showMessage("error", result.error);
+      } else {
+        showMessage("success", "Today's problems have been force-set");
+        setProblem1Number("");
+        setProblem1Name("");
+        setProblem2Number("");
+        setProblem2Name("");
+      }
+    });
+  };
+
 
   // ── Remove Member ──
   const handleRemoveMember = (userId: string, name: string) => {
@@ -174,6 +221,86 @@ export function AdminPanel({
           {message.text}
         </motion.div>
       )}
+
+      {/* 0. Manage Today's Problems */}
+      <Card className="border-border/50 border-orange-500/30 bg-orange-500/5">
+        <CardHeader>
+          <CardTitle className="text-base text-orange-500 flex items-center justify-between">
+            Manage Today's Problems
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleResetProblems}
+              disabled={isPending}
+              type="button"
+            >
+              Clear Today's Problems
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            Override the current setter and forcefully assign new problems. Note: Doing this will wipe any completions already made today.
+          </p>
+          <form onSubmit={handleForceSetProblems} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="problem1Number" className="text-xs">Problem 1 Number</Label>
+                <Input
+                  id="problem1Number"
+                  name="problem1Number"
+                  type="number"
+                  min="1"
+                  required
+                  value={problem1Number}
+                  onChange={(e) => setProblem1Number(e.target.value)}
+                  placeholder="e.g. 1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="problem1Name" className="text-xs">Problem 1 Name</Label>
+                <Input
+                  id="problem1Name"
+                  name="problem1Name"
+                  required
+                  value={problem1Name}
+                  onChange={(e) => setProblem1Name(e.target.value)}
+                  placeholder="e.g. Two Sum"
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="problem2Number" className="text-xs">Problem 2 Number</Label>
+                <Input
+                  id="problem2Number"
+                  name="problem2Number"
+                  type="number"
+                  min="1"
+                  required
+                  value={problem2Number}
+                  onChange={(e) => setProblem2Number(e.target.value)}
+                  placeholder="e.g. 200"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="problem2Name" className="text-xs">Problem 2 Name</Label>
+                <Input
+                  id="problem2Name"
+                  name="problem2Name"
+                  required
+                  value={problem2Name}
+                  onChange={(e) => setProblem2Name(e.target.value)}
+                  placeholder="e.g. Number of Islands"
+                />
+              </div>
+            </div>
+            <Button type="submit" disabled={isPending} className="w-full" size="sm">
+              {isPending ? "Applying Override..." : "Force Set Problems"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* 1. Remove Member */}
       <Card className="border-border/50">
