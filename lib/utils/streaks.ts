@@ -72,33 +72,50 @@ export function calculateStreaks(
   yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
   let current = 0;
+  let previousDate: Date | null = null;
 
   // Walk backwards from the most recent entry
   for (let i = sorted.length - 1; i >= 0; i--) {
-    if (sorted[i].score === 0) break;
+    const entryDate = sorted[i].date;
+    const score = sorted[i].score;
 
-    if (i === sorted.length - 1) {
-      // Most recent entry must be today or yesterday to count as "current"
-      const entryDate = sorted[i].date;
-      if (
-        entryDate.getTime() !== today.getTime() &&
-        entryDate.getTime() !== yesterday.getTime()
-      ) {
-        break;
+    // If the entry is today, we only count it if score > 0.
+    // If score is 0, we simply ignore it because the day isn't over yet!
+    if (entryDate.getTime() === today.getTime()) {
+      if (score > 0) {
+        current++;
+        previousDate = entryDate;
       }
-      current = 1;
-    } else {
-      const nextDate = sorted[i + 1].date;
-      const currDate = sorted[i].date;
-      const diffDays = Math.round(
-        (nextDate.getTime() - currDate.getTime()) / (1000 * 60 * 60 * 24)
-      );
+      continue;
+    }
 
+    // If the entry is yesterday, a score of 0 strictly breaks the streak.
+    if (entryDate.getTime() === yesterday.getTime()) {
+      if (score === 0) {
+        break;
+      } else {
+        current++;
+        previousDate = entryDate;
+      }
+      continue;
+    }
+
+    // For any entry older than yesterday:
+    if (score === 0) break;
+
+    if (previousDate) {
+      const diffDays = Math.round(
+        (previousDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
       if (diffDays === 1) {
         current++;
+        previousDate = entryDate;
       } else {
-        break;
+        break; // Gap in streak
       }
+    } else {
+      // We didn't have a valid completion today or yesterday, so current streak is 0.
+      break;
     }
   }
 
