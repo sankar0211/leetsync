@@ -14,7 +14,7 @@ interface LeaderboardEntry {
   currentStreak: number;
   completedCount: number;
   aiPercentage: number;
-  lastCompletionToday: Date | null;
+  lastCompletionEver: Date | null;
 }
 
 interface LeaderboardProps {

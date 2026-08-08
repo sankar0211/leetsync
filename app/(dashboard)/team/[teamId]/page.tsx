@@ -92,12 +92,10 @@ export default async function TeamPage({ params }: TeamPageProps) {
     }));
     const streaks = calculateStreaks(dayScores);
 
-    // Today's completion time (time they finished their last problem today)
-    const todayCompletions = todaysProblems?.completions?.filter(
-      (c) => c.userId === member.userId && c.completedAt
-    );
-    const lastCompletionToday = todayCompletions?.length
-      ? todayCompletions.reduce((latest, c) => {
+    // Last completion time EVER (time they finished their last problem across all days)
+    const validCompletions = userCompletions.filter((c) => c.completedAt);
+    const lastCompletionEver = validCompletions.length
+      ? validCompletions.reduce((latest, c) => {
           if (!c.completedAt) return latest;
           if (!latest) return c.completedAt;
           return c.completedAt > latest ? c.completedAt : latest;
@@ -113,21 +111,21 @@ export default async function TeamPage({ params }: TeamPageProps) {
       longestStreak: streaks.longest,
       completedCount,
       aiPercentage: aiPct,
-      lastCompletionToday,
+      lastCompletionEver,
     };
   });
 
   // Sort leaderboard: points desc, then most recent completion time first for tiebreak
   leaderboardData.sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
-    // Tiebreak: most recent time they finished all their completed problems today
-    if (a.lastCompletionToday && b.lastCompletionToday) {
+    // Tiebreak: most recent time they finished any problem across all days
+    if (a.lastCompletionEver && b.lastCompletionEver) {
       return (
-        b.lastCompletionToday.getTime() - a.lastCompletionToday.getTime()
+        b.lastCompletionEver.getTime() - a.lastCompletionEver.getTime()
       );
     }
-    if (a.lastCompletionToday) return -1;
-    if (b.lastCompletionToday) return 1;
+    if (a.lastCompletionEver) return -1;
+    if (b.lastCompletionEver) return 1;
     return 0;
   });
 
