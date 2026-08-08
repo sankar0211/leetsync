@@ -25,6 +25,7 @@ model User {
   setProblems      DailyProblem[]     @relation("ProblemSetter")
   completions      CompletionRecord[]
   activityLogs     ActivityLog[]
+  messages         Message[]
 }
 
 // ──────────────────────────────────────────────
@@ -42,6 +43,7 @@ model Team {
   memberships      TeamMembership[]
   dailyProblems    DailyProblem[]
   activityLogs     ActivityLog[]
+  messages         Message[]
 }
 
 // ──────────────────────────────────────────────
@@ -126,4 +128,18 @@ model ActivityLog {
 
   team             Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user             User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+// ──────────────────────────────────────────────
+// Message — team chat messages
+// ──────────────────────────────────────────────
+model Message {
+  id               String             @id @default(uuid())
+  teamId           String
+  userId           String
+  content          String
+  createdAt        DateTime           @default(now())
+
+  team             Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

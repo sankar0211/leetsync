@@ -12,6 +12,7 @@ import { ProgressBoard } from "@/components/dashboard/progress-board";
 import { Leaderboard } from "@/components/dashboard/leaderboard";
 import { TeamStats } from "@/components/dashboard/team-stats";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
+import { ChatBox } from "@/components/dashboard/chat-box";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -205,26 +206,35 @@ export default async function TeamPage({ params }: TeamPageProps) {
 
       {/* Today's problems or entry form */}
       {todaysProblems ? (
-        <TodaysProblems
-          teamId={teamId}
-          problems={todaysProblems}
-          currentUserId={user.id}
-          setterName={todaysSetter?.user.name ?? "Unknown"}
-        />
+        <div className="space-y-6">
+          <TodaysProblems
+            teamId={teamId}
+            problems={todaysProblems}
+            currentUserId={user.id}
+            setterName={todaysSetter?.user.name ?? "Unknown"}
+          />
+          <ChatBox teamId={teamId} currentUserId={user.id} />
+        </div>
       ) : isCurrentUserSetter ? (
-        <ProblemEntryForm teamId={teamId} />
+        <div className="space-y-6">
+          <ProblemEntryForm teamId={teamId} />
+          <ChatBox teamId={teamId} currentUserId={user.id} />
+        </div>
       ) : (
-        <div className="p-6 rounded-lg border border-border/50 bg-card text-center">
-          <p className="text-lg">
-            ⏳ It&apos;s{" "}
-            <span className="font-semibold text-emerald-400">
-              {todaysSetter?.user.name ?? "someone"}
-            </span>
-            &apos;s turn to set today&apos;s problems
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Check back soon!
-          </p>
+        <div className="space-y-6">
+          <div className="p-6 rounded-lg border border-border/50 bg-card text-center">
+            <p className="text-lg">
+              ⏳ It&apos;s{" "}
+              <span className="font-semibold text-emerald-400">
+                {todaysSetter?.user.name ?? "someone"}
+              </span>
+              &apos;s turn to set today&apos;s problems
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Check back soon!
+            </p>
+          </div>
+          <ChatBox teamId={teamId} currentUserId={user.id} />
         </div>
       )}
 
