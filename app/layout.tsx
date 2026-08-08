@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/shared/theme-provider";
+import { MeshBackground } from "@/components/shared/mesh-background";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <MeshBackground />
           {children}
         </ThemeProvider>
       </body>
