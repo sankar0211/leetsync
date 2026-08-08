@@ -13,28 +13,44 @@ export interface RotationMember {
 }
 
 /**
- * Get today's date as a Date with time zeroed out (local timezone).
+ * Get today's date as a Date with time zeroed out.
+ * Uses the configured timezone (defaults to Asia/Kolkata for IST).
  */
 export function getToday(): Date {
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tz = process.env.TIMEZONE || "Asia/Kolkata";
+  
+  // Format the date in the target timezone
+  const tzString = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+
+  // tzString is "MM/DD/YYYY"
+  const [month, day, year] = tzString.split("/");
+  // We create a UTC Date representing the start of that calendar day.
+  // This ensures the database lookup (which is UTC) uses the correct day index.
+  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
 }
 
 /**
  * Calculate the number of days between two dates (ignoring time).
+ * Uses UTC methods to avoid daylight saving time or server locale issues.
  */
 function daysBetween(startDate: Date, endDate: Date): number {
-  const start = new Date(
-    startDate.getFullYear(),
-    startDate.getMonth(),
-    startDate.getDate()
+  const start = Date.UTC(
+    startDate.getUTCFullYear(),
+    startDate.getUTCMonth(),
+    startDate.getUTCDate()
   );
-  const end = new Date(
-    endDate.getFullYear(),
-    endDate.getMonth(),
-    endDate.getDate()
+  const end = Date.UTC(
+    endDate.getUTCFullYear(),
+    endDate.getUTCMonth(),
+    endDate.getUTCDate()
   );
-  return Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  return Math.floor((end - start) / (1000 * 60 * 60 * 24));
 }
 
 /**
