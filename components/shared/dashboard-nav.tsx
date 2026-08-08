@@ -32,13 +32,13 @@ export function DashboardNav({ user }: DashboardNavProps) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 dark:border-white/5 bg-white/40 dark:bg-black/20 backdrop-blur-xl">
-      <div className="container mx-auto px-4 max-w-7xl flex items-center justify-between h-14">
+      <div className="container mx-auto px-4 max-w-7xl flex items-center justify-between h-16">
         <Link
           href="/dashboard"
           className="hover:opacity-80 transition-opacity flex items-center"
         >
-          <img src="/logo-light.png" alt="LeetSync" className="h-10 w-auto block dark:hidden object-contain" />
-          <img src="/logo-dark.png" alt="LeetSync" className="h-10 w-auto hidden dark:block object-contain" />
+          <img src="/logo-light.png" alt="LeetSync" className="h-14 w-auto block dark:hidden object-contain scale-[1.35] origin-left" />
+          <img src="/logo-dark.png" alt="LeetSync" className="h-14 w-auto hidden dark:block object-contain scale-[1.35] origin-left" />
         </Link>
 
         <div className="flex items-center gap-3">
