@@ -92,15 +92,15 @@ export default async function TeamPage({ params }: TeamPageProps) {
     }));
     const streaks = calculateStreaks(dayScores);
 
-    // Today's completion time (earliest completedAt today)
+    // Today's completion time (time they finished their last problem today)
     const todayCompletions = todaysProblems?.completions?.filter(
       (c) => c.userId === member.userId && c.completedAt
     );
-    const firstCompletionToday = todayCompletions?.length
-      ? todayCompletions.reduce((earliest, c) => {
-          if (!c.completedAt) return earliest;
-          if (!earliest) return c.completedAt;
-          return c.completedAt < earliest ? c.completedAt : earliest;
+    const lastCompletionToday = todayCompletions?.length
+      ? todayCompletions.reduce((latest, c) => {
+          if (!c.completedAt) return latest;
+          if (!latest) return c.completedAt;
+          return c.completedAt > latest ? c.completedAt : latest;
         }, null as Date | null)
       : null;
 
@@ -113,21 +113,21 @@ export default async function TeamPage({ params }: TeamPageProps) {
       longestStreak: streaks.longest,
       completedCount,
       aiPercentage: aiPct,
-      firstCompletionToday,
+      lastCompletionToday,
     };
   });
 
-  // Sort leaderboard: points desc, then earliest completion time asc for tiebreak
+  // Sort leaderboard: points desc, then time they achieved those points (last completion) asc for tiebreak
   leaderboardData.sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
-    // Tiebreak: earliest first completion today
-    if (a.firstCompletionToday && b.firstCompletionToday) {
+    // Tiebreak: earliest time they finished all their completed problems today
+    if (a.lastCompletionToday && b.lastCompletionToday) {
       return (
-        a.firstCompletionToday.getTime() - b.firstCompletionToday.getTime()
+        a.lastCompletionToday.getTime() - b.lastCompletionToday.getTime()
       );
     }
-    if (a.firstCompletionToday) return -1;
-    if (b.firstCompletionToday) return 1;
+    if (a.lastCompletionToday) return -1;
+    if (b.lastCompletionToday) return 1;
     return 0;
   });
 
