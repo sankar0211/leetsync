@@ -25,14 +25,19 @@ export function calculateStreaks(
 
   // Normalize dates and sort ascending
   const sorted = dayScores
-    .map((d) => ({
-      date: new Date(
-        new Date(d.date).getFullYear(),
-        new Date(d.date).getMonth(),
-        new Date(d.date).getDate()
-      ),
-      score: d.score,
-    }))
+    .map((d) => {
+      const dateObj = new Date(d.date);
+      return {
+        date: new Date(
+          Date.UTC(
+            dateObj.getUTCFullYear(),
+            dateObj.getUTCMonth(),
+            dateObj.getUTCDate()
+          )
+        ),
+        score: d.score,
+      };
+    })
     .sort((a, b) => a.date.getTime() - b.date.getTime());
 
   let longest = 0;
@@ -64,7 +69,7 @@ export function calculateStreaks(
   // Now calculate actual current streak (must include today or yesterday)
   const today = getToday();
   const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setUTCDate(yesterday.getUTCDate() - 1);
 
   let current = 0;
 
