@@ -35,9 +35,10 @@ export function DashboardNav({ user }: DashboardNavProps) {
       <div className="container mx-auto px-4 max-w-7xl flex items-center justify-between h-14">
         <Link
           href="/dashboard"
-          className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent hover:opacity-80 transition-opacity"
+          className="hover:opacity-80 transition-opacity flex items-center"
         >
-          LeetSync
+          <img src="/logo-light.png" alt="LeetSync" className="h-10 w-auto block dark:hidden object-contain" />
+          <img src="/logo-dark.png" alt="LeetSync" className="h-10 w-auto hidden dark:block object-contain" />
         </Link>
 
         <div className="flex items-center gap-3">
