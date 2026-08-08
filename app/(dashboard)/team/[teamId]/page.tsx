@@ -117,13 +117,13 @@ export default async function TeamPage({ params }: TeamPageProps) {
     };
   });
 
-  // Sort leaderboard: points desc, then time they achieved those points (last completion) asc for tiebreak
+  // Sort leaderboard: points desc, then most recent completion time first for tiebreak
   leaderboardData.sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
-    // Tiebreak: earliest time they finished all their completed problems today
+    // Tiebreak: most recent time they finished all their completed problems today
     if (a.lastCompletionToday && b.lastCompletionToday) {
       return (
-        a.lastCompletionToday.getTime() - b.lastCompletionToday.getTime()
+        b.lastCompletionToday.getTime() - a.lastCompletionToday.getTime()
       );
     }
     if (a.lastCompletionToday) return -1;
