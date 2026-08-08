@@ -29,10 +29,9 @@ export default function LoginPage() {
     >
       <Card className="border-border/50 bg-card/80 backdrop-blur-sm shadow-2xl">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto mb-2">
-            <span className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-              LeetSync
-            </span>
+          <div className="mx-auto mb-2 flex justify-center">
+            <img src="/logo-stacked-light.png" alt="LeetSync" className="h-24 w-auto block dark:hidden object-contain" />
+            <img src="/logo-stacked-dark.png" alt="LeetSync" className="h-24 w-auto hidden dark:block object-contain" />
           </div>
           <CardTitle className="text-xl">Welcome back</CardTitle>
           <CardDescription>
