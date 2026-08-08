@@ -37,8 +37,8 @@ export function DashboardNav({ user }: DashboardNavProps) {
           href="/dashboard"
           className="hover:opacity-80 transition-opacity flex items-center ml-2"
         >
-          <img src="/logo-light.png" alt="LeetSync" className="h-16 w-auto block dark:hidden object-contain scale-[2.0] origin-left" />
-          <img src="/logo-dark.png" alt="LeetSync" className="h-16 w-auto hidden dark:block object-contain scale-[2.0] origin-left" />
+          <img src="/logo-light.png" alt="LeetSync" className="h-14 w-auto block dark:hidden object-contain" />
+          <img src="/logo-dark.png" alt="LeetSync" className="h-14 w-auto hidden dark:block object-contain" />
         </Link>
 
         <div className="flex items-center gap-3">
