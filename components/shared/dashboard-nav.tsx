@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface DashboardNavProps {
   user: {
@@ -50,6 +51,8 @@ export function DashboardNav({ user }: DashboardNavProps) {
               Join Team
             </Button>
           </Link>
+
+          <ThemeToggle />
 
           <DropdownMenu>
             <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="rounded-full" />}>
