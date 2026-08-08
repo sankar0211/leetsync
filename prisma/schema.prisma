@@ -1,0 +1,129 @@
+// LeetSync — Full Prisma Schema
+// All 6 tables defined here. No schema changes in later phases.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ──────────────────────────────────────────────
+// User — mirrors Supabase auth.users
+// ──────────────────────────────────────────────
+model User {
+  id               String             @id // matches Supabase auth.users.id
+  name             String
+  username         String             @unique
+  email            String             @unique
+  createdAt        DateTime           @default(now())
+
+  ownedTeams       Team[]             @relation("TeamOwner")
+  memberships      TeamMembership[]
+  setProblems      DailyProblem[]     @relation("ProblemSetter")
+  completions      CompletionRecord[]
+  activityLogs     ActivityLog[]
+}
+
+// ──────────────────────────────────────────────
+// Team — independent group of friends
+// ──────────────────────────────────────────────
+model Team {
+  id               String             @id @default(uuid())
+  name             String
+  uniqueCode       String             @unique
+  passwordHash     String
+  ownerId          String
+  createdAt        DateTime           @default(now())
+
+  owner            User               @relation("TeamOwner", fields: [ownerId], references: [id])
+  memberships      TeamMembership[]
+  dailyProblems    DailyProblem[]
+  activityLogs     ActivityLog[]
+}
+
+// ──────────────────────────────────────────────
+// TeamMembership — join table with rotation order
+// ──────────────────────────────────────────────
+model TeamMembership {
+  id               String             @id @default(uuid())
+  userId           String
+  teamId           String
+  joinedAt         DateTime           @default(now())
+  rotationPosition Int
+
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team             Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+}
+
+// ──────────────────────────────────────────────
+// DailyProblem — one per team per day
+// ──────────────────────────────────────────────
+model DailyProblem {
+  id               String             @id @default(uuid())
+  teamId           String
+  date             DateTime           @db.Date
+  problemSetterId  String
+  problem1Number   Int
+  problem1Name     String
+  problem2Number   Int
+  problem2Name     String
+  createdAt        DateTime           @default(now())
+
+  team             Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  problemSetter    User               @relation("ProblemSetter", fields: [problemSetterId], references: [id])
+  completions      CompletionRecord[]
+
+  @@unique([teamId, date])
+}
+
+// ──────────────────────────────────────────────
+// ActivityType — enum for activity log entries
+// ──────────────────────────────────────────────
+enum ActivityType {
+  PROBLEM_COMPLETED
+  BOTH_COMPLETED
+  AI_USED
+  BECAME_SETTER
+  JOINED_TEAM
+  LEFT_TEAM
+  TEAM_CREATED
+}
+
+// ──────────────────────────────────────────────
+// CompletionRecord — per-user, per-problem tracking
+// Critical: completedAt is write-once (enforced in app code)
+// ──────────────────────────────────────────────
+model CompletionRecord {
+  id               String             @id @default(uuid())
+  dailyProblemId   String
+  userId           String
+  problemNumber    Int                // 1 or 2
+  completed        Boolean            @default(false)
+  completedAt      DateTime?
+  usedLeetAI       Boolean            @default(false)
+
+  dailyProblem     DailyProblem       @relation(fields: [dailyProblemId], references: [id], onDelete: Cascade)
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dailyProblemId, userId, problemNumber])
+}
+
+// ──────────────────────────────────────────────
+// ActivityLog — audit trail for team events
+// ──────────────────────────────────────────────
+model ActivityLog {
+  id               String             @id @default(uuid())
+  teamId           String
+  userId           String?
+  type             ActivityType
+  message          String
+  createdAt        DateTime           @default(now())
+
+  team             Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user             User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
