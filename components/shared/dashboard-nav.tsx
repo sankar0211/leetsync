@@ -31,7 +31,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
     .slice(0, 2);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-white/10 dark:border-white/5 bg-white/40 dark:bg-black/20 backdrop-blur-xl">
       <div className="container mx-auto px-4 max-w-7xl flex items-center justify-between h-14">
         <Link
           href="/dashboard"
