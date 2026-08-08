@@ -118,9 +118,22 @@ export function ChatBox({
                     )}
                   >
                     {showHeader && (
-                      <span className="text-xs text-muted-foreground mb-1 px-1">
-                        {isMe ? "You" : msg.user.name}
-                      </span>
+                      <div
+                        className={cn(
+                          "flex items-baseline gap-2 mb-1 px-1",
+                          isMe && "flex-row-reverse"
+                        )}
+                      >
+                        <span className="text-xs font-medium text-foreground">
+                          {isMe ? "You" : msg.user.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {new Intl.DateTimeFormat("en-US", {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          }).format(new Date(msg.createdAt))}
+                        </span>
+                      </div>
                     )}
                     <div
                       className={cn(
