@@ -5,7 +5,6 @@ import { getMessages, sendMessage } from "@/lib/actions/chat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -97,7 +96,7 @@ export function ChatBox({
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 p-0 flex flex-col min-h-0">
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+        <div className="flex-1 p-4 overflow-y-auto" ref={scrollRef}>
           <div className="space-y-4">
             {messages.length === 0 ? (
               <div className="text-center text-sm text-muted-foreground pt-10">
@@ -150,7 +149,7 @@ export function ChatBox({
               })
             )}
           </div>
-        </ScrollArea>
+        </div>
         <div className="p-3 border-t bg-background">
           <form onSubmit={handleSend} className="flex gap-2">
             <Input
