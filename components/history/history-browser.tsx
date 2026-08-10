@@ -120,17 +120,27 @@ export function HistoryBrowser({
                 <CardContent className="space-y-3">
                   <div className="p-3 rounded-lg bg-muted/30">
                     <span className="text-xs text-muted-foreground">P1: </span>
-                    <span className="font-medium">
+                    <a
+                      href={`https://leetcode.com/problems/${selectedProblem.problem1Name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium hover:text-emerald-400 transition-colors"
+                    >
                       #{selectedProblem.problem1Number} —{" "}
                       {selectedProblem.problem1Name}
-                    </span>
+                    </a>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/30">
                     <span className="text-xs text-muted-foreground">P2: </span>
-                    <span className="font-medium">
+                    <a
+                      href={`https://leetcode.com/problems/${selectedProblem.problem2Name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium hover:text-emerald-400 transition-colors"
+                    >
                       #{selectedProblem.problem2Number} —{" "}
                       {selectedProblem.problem2Name}
-                    </span>
+                    </a>
                   </div>
                 </CardContent>
               </Card>

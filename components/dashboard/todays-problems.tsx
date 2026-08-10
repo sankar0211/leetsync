@@ -100,6 +100,7 @@ export function TodaysProblems({
         <CardContent className="space-y-4">
           {problemList.map((prob, index) => {
             const completion = userCompletions.find((c) => c.problemNumber === index + 1);
+            const slug = prob.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
             return (
               <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/30">
                 <div className="flex items-center gap-3">
@@ -108,7 +109,7 @@ export function TodaysProblems({
                   </span>
                   <div>
                     <a
-                      href={`https://leetcode.com/problems/`}
+                      href={`https://leetcode.com/problems/${slug}/`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-medium hover:text-emerald-400 transition-colors"
