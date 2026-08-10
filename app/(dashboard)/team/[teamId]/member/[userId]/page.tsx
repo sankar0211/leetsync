@@ -6,7 +6,7 @@ import { dailyScore, totalScore, aiUsagePercentage } from "@/lib/utils/scoring";
 import { calculateStreaks } from "@/lib/utils/streaks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ProfileHeatmap } from "@/components/profile/profile-heatmap";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export default async function MemberPage({ params }: MemberPageProps) {
   // Get member info
   const member = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, username: true, email: true, createdAt: true },
+    select: { id: true, name: true, username: true, email: true, createdAt: true, avatarUrl: true },
   });
   if (!member) notFound();
 
@@ -120,6 +120,7 @@ export default async function MemberPage({ params }: MemberPageProps) {
       {/* Profile header */}
       <div className="flex items-center gap-4">
         <Avatar className="h-16 w-16">
+          <AvatarImage src={member.avatarUrl || ""} alt={member.name} />
           <AvatarFallback className="bg-emerald-500/20 text-emerald-400 text-xl font-bold">
             {initials}
           </AvatarFallback>

@@ -104,6 +104,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
         userId: member.userId,
         name: member.user.name,
         username: member.user.username,
+        avatarUrl: member.user.avatarUrl,
         points,
         currentStreak: streaks.current,
         longestStreak: streaks.longest,

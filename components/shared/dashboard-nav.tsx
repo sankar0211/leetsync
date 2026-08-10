@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu } from "lucide-react";
 
 interface DashboardNavProps {
@@ -19,6 +19,7 @@ interface DashboardNavProps {
     name: string;
     username: string;
     email: string;
+    avatarUrl?: string | null;
   };
 }
 
@@ -67,6 +68,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
           <DropdownMenu>
             <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="rounded-full" />}>
               <Avatar className="h-8 w-8">
+                <AvatarImage src={user.avatarUrl || ""} alt={user.name} />
                 <AvatarFallback className="bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
                   {initials}
                 </AvatarFallback>
@@ -82,6 +84,9 @@ export function DashboardNav({ user }: DashboardNavProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem render={<Link href="/dashboard" />}>
                 My Teams
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link href="/profile" />}>
+                Profile Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

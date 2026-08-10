@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -11,6 +11,7 @@ interface LeaderboardEntry {
   userId: string;
   name: string;
   username: string;
+  avatarUrl?: string | null;
   points: number;
   currentStreak: number;
   completedCount: number;
@@ -68,6 +69,7 @@ function LeaderboardList({ data, teamId }: { data: LeaderboardEntry[], teamId: s
 
                 {/* Avatar */}
                 <Avatar className="h-8 w-8">
+                  <AvatarImage src={entry.avatarUrl || ""} alt={entry.name} />
                   <AvatarFallback
                     className={`text-xs font-semibold ${
                       isTop

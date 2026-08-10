@@ -18,6 +18,7 @@ model User {
   name             String
   username         String             @unique
   email            String             @unique
+  avatarUrl        String?
   createdAt        DateTime           @default(now())
 
   ownedTeams       Team[]             @relation("TeamOwner")
