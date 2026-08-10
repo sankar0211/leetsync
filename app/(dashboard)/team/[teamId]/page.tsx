@@ -34,7 +34,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
     include: {
       memberships: {
         include: {
-          user: { select: { id: true, name: true, username: true } },
+          user: { select: { id: true, name: true, username: true, avatarUrl: true } },
         },
         orderBy: { rotationPosition: "asc" },
       },
