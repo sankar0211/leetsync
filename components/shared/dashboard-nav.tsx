@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Menu } from "lucide-react";
 
 interface DashboardNavProps {
   user: {
@@ -41,16 +42,27 @@ export function DashboardNav({ user }: DashboardNavProps) {
         </Link>
 
         <div className="flex items-center gap-3">
-          <Link href="/create-team">
-            <Button variant="outline" size="sm">
-              Create Team
-            </Button>
-          </Link>
-          <Link href="/join-team">
-            <Button variant="ghost" size="sm">
-              Join Team
-            </Button>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              }
+            />
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem render={<Link href="/create-team" />}>
+                Create Team
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link href="/join-team" />}>
+                Join Team
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem render={<Link href="/dashboard" />}>
+                My Teams
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="rounded-full" />}>

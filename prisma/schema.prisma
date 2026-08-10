@@ -70,10 +70,13 @@ model DailyProblem {
   teamId           String
   date             DateTime           @db.Date
   problemSetterId  String
-  problem1Number   Int
-  problem1Name     String
-  problem2Number   Int
-  problem2Name     String
+  problem1Number   Int?
+  problem1Name     String?
+  problem2Number   Int?
+  problem2Name     String?
+  
+  problemsData     Json?              // Array of { number: number, name: string }
+  extendedUntil    DateTime?
   createdAt        DateTime           @default(now())
 
   team             Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)

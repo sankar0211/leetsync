@@ -18,12 +18,11 @@ export interface CompletionData {
 
 /**
  * Calculate the daily score for a user based on their completions.
+ * 5 points per completed problem.
  */
 export function dailyScore(completions: { completed: boolean }[]): number {
   const completedCount = completions.filter((c) => c.completed).length;
-  if (completedCount >= 2) return 10;
-  if (completedCount === 1) return 5;
-  return 0;
+  return completedCount * 5;
 }
 
 /**

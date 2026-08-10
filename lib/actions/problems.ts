@@ -7,14 +7,16 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
 // ──────────────────────────────────────────────
-// Validation
+// Validation & Helpers
 // ──────────────────────────────────────────────
 
 const problemSchema = z.object({
-  problem1Number: z.coerce.number().int().positive("Problem 1 number is required"),
-  problem1Name: z.string().min(1, "Problem 1 name is required").max(200),
-  problem2Number: z.coerce.number().int().positive("Problem 2 number is required"),
-  problem2Name: z.string().min(1, "Problem 2 name is required").max(200),
+  problems: z.array(
+    z.object({
+      number: z.coerce.number().int().positive("Problem number is required"),
+      name: z.string().min(1, "Problem name is required").max(200),
+    })
+  ).min(1, "At least one problem is required"),
 });
 
 // ──────────────────────────────────────────────
@@ -61,14 +63,14 @@ export async function submitDailyProblems(
   }
 
   // Validate input
-  const rawData = {
-    problem1Number: formData.get("problem1Number"),
-    problem1Name: (formData.get("problem1Name") as string)?.trim(),
-    problem2Number: formData.get("problem2Number"),
-    problem2Name: (formData.get("problem2Name") as string)?.trim(),
-  };
+  let parsedProblems = [];
+  try {
+    parsedProblems = JSON.parse(formData.get("problemsData") as string || "[]");
+  } catch (e) {
+    return { error: "Invalid problems data format" };
+  }
 
-  const parsed = problemSchema.safeParse(rawData);
+  const parsed = problemSchema.safeParse({ problems: parsedProblems });
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
   }
@@ -80,10 +82,7 @@ export async function submitDailyProblems(
         teamId,
         date: today,
         problemSetterId: user.id,
-        problem1Number: parsed.data.problem1Number,
-        problem1Name: parsed.data.problem1Name,
-        problem2Number: parsed.data.problem2Number,
-        problem2Name: parsed.data.problem2Name,
+        problemsData: parsed.data.problems,
       },
     }),
     prisma.activityLog.create({
@@ -158,14 +157,14 @@ export async function adminSubmitDailyProblems(
     return { error: "Only the team admin can force-set problems" };
   }
 
-  const rawData = {
-    problem1Number: formData.get("problem1Number"),
-    problem1Name: (formData.get("problem1Name") as string)?.trim(),
-    problem2Number: formData.get("problem2Number"),
-    problem2Name: (formData.get("problem2Name") as string)?.trim(),
-  };
+  let parsedProblems = [];
+  try {
+    parsedProblems = JSON.parse(formData.get("problemsData") as string || "[]");
+  } catch (e) {
+    return { error: "Invalid problems data format" };
+  }
 
-  const parsed = problemSchema.safeParse(rawData);
+  const parsed = problemSchema.safeParse({ problems: parsedProblems });
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
   }
@@ -187,10 +186,7 @@ export async function adminSubmitDailyProblems(
         teamId,
         date: today,
         problemSetterId: user.id,
-        problem1Number: parsed.data.problem1Number,
-        problem1Name: parsed.data.problem1Name,
-        problem2Number: parsed.data.problem2Number,
-        problem2Name: parsed.data.problem2Name,
+        problemsData: parsed.data.problems,
       },
     });
 
@@ -209,8 +205,41 @@ export async function adminSubmitDailyProblems(
   return { error: null };
 }
 
+export async function extendDailyProblem(teamId: string, dailyProblemId: string) {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+  });
+  const dp = await prisma.dailyProblem.findUnique({
+    where: { id: dailyProblemId },
+  });
+
+  if (!team || !dp || dp.teamId !== teamId) {
+    return { error: "Not found" };
+  }
+
+  // Must be admin or original setter
+  if (team.ownerId !== user.id && dp.problemSetterId !== user.id) {
+    return { error: "Only the admin or problem setter can extend time" };
+  }
+
+  // Extend by 24 hours from now
+  const newExtension = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  await prisma.dailyProblem.update({
+    where: { id: dailyProblemId },
+    data: { extendedUntil: newExtension },
+  });
+
+  revalidatePath(`/team/${teamId}`);
+  return { error: null };
+}
+
 // ──────────────────────────────────────────────
-// Get Today's Problems
+// Get Today's Problems & Active Extended Problems
+// ──────────────────────────────────────────────
 // ──────────────────────────────────────────────
 
 export async function getTodaysProblems(teamId: string) {
@@ -229,6 +258,30 @@ export async function getTodaysProblems(teamId: string) {
         },
       },
     },
+  });
+}
+
+export async function getActiveExtendedProblems(teamId: string) {
+  const today = getToday();
+  return prisma.dailyProblem.findMany({
+    where: {
+      teamId,
+      date: { not: today },
+      extendedUntil: { gt: new Date() },
+    },
+    include: {
+      problemSetter: {
+        select: { id: true, name: true, username: true },
+      },
+      completions: {
+        include: {
+          user: {
+            select: { id: true, name: true, username: true },
+          },
+        },
+      },
+    },
+    orderBy: { date: "desc" },
   });
 }
 

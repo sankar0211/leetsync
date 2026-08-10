@@ -52,11 +52,14 @@ export default async function TeamPage({ params }: TeamPageProps) {
     (m) => m.userId === todaysSetterId
   );
 
-  // Get today's problems
+  // Get today's problems and any extended problems
   const todaysProblems = await getTodaysProblems(teamId);
+  const { getActiveExtendedProblems } = await import("@/lib/actions/problems");
+  const extendedProblems = await getActiveExtendedProblems(teamId);
 
   // Determine if current user is today's setter
   const isCurrentUserSetter = todaysSetterId === user.id;
+  const isAdmin = team.ownerId === user.id;
 
   // ── Leaderboard Data ──
   // Get all daily problems and completions for this team
@@ -68,70 +71,68 @@ export default async function TeamPage({ params }: TeamPageProps) {
     orderBy: { date: "asc" },
   });
 
-  // Calculate leaderboard data per member
-  const leaderboardData = team.memberships.map((member) => {
-    // Get all completions for this user in this team
-    const userCompletions = allDailyProblems.flatMap((dp) =>
-      dp.completions.filter((c) => c.userId === member.userId)
-    );
-
-    // Group by day for scoring
-    const dayCompletions = allDailyProblems.map((dp) =>
-      dp.completions.filter((c) => c.userId === member.userId)
-    );
-
-    const points = totalScore(dayCompletions);
-    const completedCount = userCompletions.filter((c) => c.completed).length;
-    const aiPct = aiUsagePercentage(userCompletions);
-
-    // Streaks
-    const dayScores = allDailyProblems.map((dp) => ({
-      date: dp.date,
-      score: dailyScore(
+  function buildLeaderboard(problemsList: typeof allDailyProblems) {
+    const data = team!.memberships.map((member) => {
+      const userCompletions = problemsList.flatMap((dp) =>
         dp.completions.filter((c) => c.userId === member.userId)
-      ),
-    }));
-    const streaks = calculateStreaks(dayScores);
-
-    // Last completion time EVER (time they finished their last problem across all days)
-    const validCompletions = userCompletions.filter((c) => c.completedAt);
-    const lastCompletionEver = validCompletions.length
-      ? validCompletions.reduce((latest, c) => {
-          if (!c.completedAt) return latest;
-          if (!latest) return c.completedAt;
-          return c.completedAt > latest ? c.completedAt : latest;
-        }, null as Date | null)
-      : null;
-
-    return {
-      userId: member.userId,
-      name: member.user.name,
-      username: member.user.username,
-      points,
-      currentStreak: streaks.current,
-      longestStreak: streaks.longest,
-      completedCount,
-      aiPercentage: aiPct,
-      lastCompletionEver,
-    };
-  });
-
-  // Sort leaderboard: points desc, then earliest completion time first for tiebreak
-  leaderboardData.sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
-    // Tiebreak: earliest time they finished any problem across all days
-    if (a.lastCompletionEver && b.lastCompletionEver) {
-      return (
-        a.lastCompletionEver.getTime() - b.lastCompletionEver.getTime()
       );
-    }
-    if (a.lastCompletionEver) return -1;
-    if (b.lastCompletionEver) return 1;
-    return 0;
-  });
+      const dayCompletions = problemsList.map((dp) =>
+        dp.completions.filter((c) => c.userId === member.userId)
+      );
+      const points = totalScore(dayCompletions);
+      const completedCount = userCompletions.filter((c) => c.completed).length;
+      const aiPct = aiUsagePercentage(userCompletions);
+
+      const dayScores = problemsList.map((dp) => ({
+        date: dp.date,
+        score: dailyScore(
+          dp.completions.filter((c) => c.userId === member.userId)
+        ),
+      }));
+      const streaks = calculateStreaks(dayScores);
+
+      const validCompletions = userCompletions.filter((c) => c.completedAt);
+      const lastCompletionEver = validCompletions.length
+        ? validCompletions.reduce((latest, c) => {
+            if (!c.completedAt) return latest;
+            if (!latest) return c.completedAt;
+            return c.completedAt > latest ? c.completedAt : latest;
+          }, null as Date | null)
+        : null;
+
+      return {
+        userId: member.userId,
+        name: member.user.name,
+        username: member.user.username,
+        points,
+        currentStreak: streaks.current,
+        longestStreak: streaks.longest,
+        completedCount,
+        aiPercentage: aiPct,
+        lastCompletionEver,
+      };
+    });
+
+    data.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (a.lastCompletionEver && b.lastCompletionEver) {
+        return a.lastCompletionEver.getTime() - b.lastCompletionEver.getTime();
+      }
+      if (a.lastCompletionEver) return -1;
+      if (b.lastCompletionEver) return 1;
+      return 0;
+    });
+
+    return data;
+  }
+
+  const today = getToday();
+  const leaderboardDataOverall = buildLeaderboard(allDailyProblems);
+  const todayMs = today.getTime();
+  const todayProblemsList = allDailyProblems.filter(dp => dp.date.getTime() === todayMs);
+  const leaderboardDataToday = buildLeaderboard(todayProblemsList);
 
   // ── Team Stats ──
-  const today = getToday();
   const todayCompletionsCount = todaysProblems
     ? todaysProblems.completions.filter((c) => c.completed).length
     : 0;
@@ -194,7 +195,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
               History
             </Button>
           </Link>
-          {team.ownerId === user.id && (
+          {isAdmin && (
             <Link href={`/team/${teamId}/admin`}>
               <Button variant="outline" size="sm">
                 Admin
@@ -205,23 +206,18 @@ export default async function TeamPage({ params }: TeamPageProps) {
       </div>
 
       {/* Today's problems or entry form */}
-      {todaysProblems ? (
-        <div className="space-y-6">
+      <div className="space-y-6">
+        {todaysProblems ? (
           <TodaysProblems
             teamId={teamId}
             problems={todaysProblems}
             currentUserId={user.id}
             setterName={todaysSetter?.user.name ?? "Unknown"}
+            isAdmin={isAdmin}
           />
-          <ChatBox teamId={teamId} currentUserId={user.id} />
-        </div>
-      ) : isCurrentUserSetter ? (
-        <div className="space-y-6">
+        ) : isCurrentUserSetter ? (
           <ProblemEntryForm teamId={teamId} />
-          <ChatBox teamId={teamId} currentUserId={user.id} />
-        </div>
-      ) : (
-        <div className="space-y-6">
+        ) : (
           <div className="p-6 rounded-lg border border-border/50 bg-card text-center">
             <p className="text-lg">
               ⏳ It&apos;s{" "}
@@ -234,9 +230,21 @@ export default async function TeamPage({ params }: TeamPageProps) {
               Check back soon!
             </p>
           </div>
-          <ChatBox teamId={teamId} currentUserId={user.id} />
-        </div>
-      )}
+        )}
+
+        {extendedProblems.map(ep => (
+          <TodaysProblems
+            key={ep.id}
+            teamId={teamId}
+            problems={ep}
+            currentUserId={user.id}
+            setterName={ep.problemSetter.name}
+            isAdmin={isAdmin}
+          />
+        ))}
+
+        <ChatBox teamId={teamId} currentUserId={user.id} />
+      </div>
 
       {/* Dashboard grid */}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -253,7 +261,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
         )}
 
         {/* Leaderboard */}
-        <Leaderboard data={leaderboardData} teamId={teamId} />
+        <Leaderboard dataToday={leaderboardDataToday} dataOverall={leaderboardDataOverall} teamId={teamId} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

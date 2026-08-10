@@ -1,12 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { submitDailyProblems } from "@/lib/actions/problems";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { Plus, Trash2 } from "lucide-react";
 
 interface ProblemEntryFormProps {
   teamId: string;
@@ -17,6 +18,36 @@ export function ProblemEntryForm({ teamId }: ProblemEntryFormProps) {
   const [state, formAction, isPending] = useActionState(submitAction, {
     error: null as string | null,
   });
+
+  const [problems, setProblems] = useState([
+    { number: "", name: "" },
+    { number: "", name: "" },
+  ]);
+
+  const updateProblem = (index: number, field: "number" | "name", value: string) => {
+    const newProblems = [...problems];
+    newProblems[index][field] = value;
+    setProblems(newProblems);
+  };
+
+  const addProblem = () => {
+    setProblems([...problems, { number: "", name: "" }]);
+  };
+
+  const removeProblem = (index: number) => {
+    if (problems.length <= 1) return;
+    const newProblems = [...problems];
+    newProblems.splice(index, 1);
+    setProblems(newProblems);
+  };
+
+  // Convert to correct format for submission
+  const problemsDataStr = JSON.stringify(
+    problems.map(p => ({
+      number: parseInt(p.number, 10),
+      name: p.name
+    }))
+  );
 
   return (
     <motion.div
@@ -32,6 +63,7 @@ export function ProblemEntryForm({ teamId }: ProblemEntryFormProps) {
           </CardTitle>
         </CardHeader>
         <form action={formAction}>
+          <input type="hidden" name="problemsData" value={problemsDataStr} />
           <CardContent className="space-y-6">
             {state.error && (
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
@@ -39,71 +71,61 @@ export function ProblemEntryForm({ teamId }: ProblemEntryFormProps) {
               </div>
             )}
 
-            {/* Problem 1 */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                Problem 1
-              </h3>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <Label htmlFor="problem1Number" className="text-xs">
-                    Number
-                  </Label>
-                  <Input
-                    id="problem1Number"
-                    name="problem1Number"
-                    type="number"
-                    placeholder="e.g., 1"
-                    required
-                    min={1}
-                  />
+            <div className="space-y-6">
+              {problems.map((prob, index) => (
+                <div key={index} className="space-y-3 relative group">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                      Problem {index + 1}
+                    </h3>
+                    {problems.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeProblem(index)}
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Number</Label>
+                      <Input
+                        type="number"
+                        placeholder="e.g., 1"
+                        required
+                        min={1}
+                        value={prob.number}
+                        onChange={(e) => updateProblem(index, "number", e.target.value)}
+                      />
+                    </div>
+                    <div className="col-span-2 space-y-1">
+                      <Label className="text-xs">Name</Label>
+                      <Input
+                        placeholder="e.g., Two Sum"
+                        required
+                        value={prob.name}
+                        onChange={(e) => updateProblem(index, "name", e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="col-span-2 space-y-1">
-                  <Label htmlFor="problem1Name" className="text-xs">
-                    Name
-                  </Label>
-                  <Input
-                    id="problem1Name"
-                    name="problem1Name"
-                    placeholder="e.g., Two Sum"
-                    required
-                  />
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Problem 2 */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                Problem 2
-              </h3>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <Label htmlFor="problem2Number" className="text-xs">
-                    Number
-                  </Label>
-                  <Input
-                    id="problem2Number"
-                    name="problem2Number"
-                    type="number"
-                    placeholder="e.g., 15"
-                    required
-                    min={1}
-                  />
-                </div>
-                <div className="col-span-2 space-y-1">
-                  <Label htmlFor="problem2Name" className="text-xs">
-                    Name
-                  </Label>
-                  <Input
-                    id="problem2Name"
-                    name="problem2Name"
-                    placeholder="e.g., 3Sum"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addProblem}
+              className="w-full border-dashed"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add another problem
+            </Button>
 
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? (

@@ -1,18 +1,27 @@
 "use client";
 
+import { useActionState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CompletionToggles } from "@/components/problems/completion-toggles";
 import { motion } from "framer-motion";
+import { extendDailyProblem } from "@/lib/actions/problems";
+import { getProblemList } from "@/lib/utils/problems";
+import { Clock } from "lucide-react";
 
 interface TodaysProblemsProps {
   teamId: string;
   problems: {
     id: string;
-    problem1Number: number;
-    problem1Name: string;
-    problem2Number: number;
-    problem2Name: string;
+    problemsData: any;
+    problem1Number: number | null;
+    problem1Name: string | null;
+    problem2Number: number | null;
+    problem2Name: string | null;
+    problemSetterId: string;
+    extendedUntil: Date | null;
+    date: Date;
     completions: {
       id: string;
       userId: string;
@@ -24,6 +33,7 @@ interface TodaysProblemsProps {
   };
   currentUserId: string;
   setterName: string;
+  isAdmin: boolean;
 }
 
 export function TodaysProblems({
@@ -31,12 +41,21 @@ export function TodaysProblems({
   problems,
   currentUserId,
   setterName,
+  isAdmin,
 }: TodaysProblemsProps) {
   const userCompletions = problems.completions.filter(
     (c) => c.userId === currentUserId
   );
-  const p1Completion = userCompletions.find((c) => c.problemNumber === 1);
-  const p2Completion = userCompletions.find((c) => c.problemNumber === 2);
+  
+  const problemList = getProblemList(problems);
+  const isSetter = currentUserId === problems.problemSetterId;
+  const canExtend = isAdmin || isSetter;
+
+  const handleExtend = async () => {
+    await extendDailyProblem(teamId, problems.id);
+  };
+
+  const isExtended = problems.extendedUntil && problems.extendedUntil > new Date();
 
   return (
     <motion.div
@@ -44,69 +63,62 @@ export function TodaysProblems({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="border-border/50">
+      <Card className={`border-border/50 ${isExtended ? 'border-amber-500/30 bg-amber-500/5' : ''}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Today&apos;s Problems</CardTitle>
-            <Badge variant="secondary" className="text-xs">
-              Set by {setterName}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <CardTitle className="text-lg">
+                {problems.date.toLocaleDateString() === new Date().toLocaleDateString() ? "Today's Problems" : `Extended Problems (${problems.date.toLocaleDateString()})`}
+              </CardTitle>
+              {isExtended && (
+                <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10">
+                  <Clock className="w-3 h-3 mr-1" /> Extended
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                Set by {setterName}
+              </Badge>
+              {canExtend && (
+                <Button variant="outline" size="sm" onClick={handleExtend} className="text-xs h-6 px-2">
+                  Extend +1 Day
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Problem 1 */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/30">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                P1
-              </span>
-              <div>
-                <a
-                  href={`https://leetcode.com/problems/`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium hover:text-emerald-400 transition-colors"
-                >
-                  #{problems.problem1Number} — {problems.problem1Name}
-                </a>
+          {problemList.map((prob, index) => {
+            const completion = userCompletions.find((c) => c.problemNumber === index + 1);
+            return (
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/30">
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    P{index + 1}
+                  </span>
+                  <div>
+                    <a
+                      href={`https://leetcode.com/problems/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium hover:text-emerald-400 transition-colors"
+                    >
+                      #{prob.number} — {prob.name}
+                    </a>
+                  </div>
+                </div>
+                <CompletionToggles
+                  teamId={teamId}
+                  dailyProblemId={problems.id}
+                  problemNumber={index + 1}
+                  initialCompleted={completion?.completed ?? false}
+                  initialUsedAI={completion?.usedLeetAI ?? false}
+                  isLocked={!!completion?.completedAt}
+                />
               </div>
-            </div>
-            <CompletionToggles
-              teamId={teamId}
-              dailyProblemId={problems.id}
-              problemNumber={1}
-              initialCompleted={p1Completion?.completed ?? false}
-              initialUsedAI={p1Completion?.usedLeetAI ?? false}
-              isLocked={!!p1Completion?.completedAt}
-            />
-          </div>
-
-          {/* Problem 2 */}
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border/30">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                P2
-              </span>
-              <div>
-                <a
-                  href={`https://leetcode.com/problems/`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium hover:text-emerald-400 transition-colors"
-                >
-                  #{problems.problem2Number} — {problems.problem2Name}
-                </a>
-              </div>
-            </div>
-            <CompletionToggles
-              teamId={teamId}
-              dailyProblemId={problems.id}
-              problemNumber={2}
-              initialCompleted={p2Completion?.completed ?? false}
-              initialUsedAI={p2Completion?.usedLeetAI ?? false}
-              isLocked={!!p2Completion?.completedAt}
-            />
-          </div>
+            );
+          })}
         </CardContent>
       </Card>
     </motion.div>
