@@ -20,6 +20,13 @@ export async function getMessages(teamId: string) {
       user: {
         select: { id: true, name: true, username: true },
       },
+      replyTo: {
+        include: {
+          user: {
+            select: { id: true, name: true, username: true },
+          },
+        },
+      },
     },
     take: 100, // Limit to last 100 messages for performance
   });
@@ -27,7 +34,7 @@ export async function getMessages(teamId: string) {
   return { messages };
 }
 
-export async function sendMessage(teamId: string, content: string) {
+export async function sendMessage(teamId: string, content: string, replyToId?: string) {
   const user = await getCurrentUser();
   if (!user) return { error: "Not authenticated" };
 
@@ -41,15 +48,33 @@ export async function sendMessage(teamId: string, content: string) {
 
   if (!membership) return { error: "Not a team member" };
 
+  // If a replyToId is provided, verify the message exists in this team
+  if (replyToId) {
+    const parentMsg = await prisma.message.findUnique({
+      where: { id: replyToId },
+    });
+    if (!parentMsg || parentMsg.teamId !== teamId) {
+      return { error: "Invalid reply reference" };
+    }
+  }
+
   const message = await prisma.message.create({
     data: {
       teamId,
       userId: user.id,
       content: content.trim(),
+      replyToId: replyToId || null,
     },
     include: {
       user: {
         select: { id: true, name: true, username: true },
+      },
+      replyTo: {
+        include: {
+          user: {
+            select: { id: true, name: true, username: true },
+          },
+        },
       },
     },
   });

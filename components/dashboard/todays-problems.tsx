@@ -55,7 +55,16 @@ export function TodaysProblems({
     await extendDailyProblem(teamId, problems.id);
   };
 
-  const isExtended = problems.extendedUntil && problems.extendedUntil > new Date();
+  const formatDate = (d: Date) => {
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const isToday = formatDate(problems.date) === formatDate(new Date());
+  // Only visually highlight as extended if it's NOT today's problem
+  const isExtendedDisplay = !isToday && problems.extendedUntil && problems.extendedUntil > new Date();
 
   return (
     <motion.div
@@ -63,14 +72,14 @@ export function TodaysProblems({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className={`border-border/50 ${isExtended ? 'border-amber-500/30 bg-amber-500/5' : ''}`}>
+      <Card className={`border-border/50 ${isExtendedDisplay ? 'border-amber-500/30 bg-amber-500/5' : ''}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CardTitle className="text-lg">
-                {problems.date.toLocaleDateString() === new Date().toLocaleDateString() ? "Today's Problems" : `Extended Problems (${problems.date.toLocaleDateString()})`}
+                {isToday ? "Today's Problems" : `Extended Problems (${formatDate(problems.date)})`}
               </CardTitle>
-              {isExtended && (
+              {isExtendedDisplay && (
                 <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10">
                   <Clock className="w-3 h-3 mr-1" /> Extended
                 </Badge>
