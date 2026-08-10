@@ -5,8 +5,9 @@ import { getMessages, sendMessage } from "@/lib/actions/chat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Loader2, Reply, X } from "lucide-react";
+import { Send, Loader2, Reply, X, Maximize2, Minimize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 type Message = {
   id: string;
@@ -34,17 +35,23 @@ type Message = {
 export function ChatBox({
   teamId,
   currentUserId,
+  currentUserName,
 }: {
   teamId: string;
   currentUserId: string;
+  currentUserName: string;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const isScrolledUpRef = useRef(false);
+  const channelRef = useRef<any>(null);
+  const supabase = createClient();
 
   const fetchMessages = async () => {
     const res = await getMessages(teamId);
@@ -58,6 +65,52 @@ export function ChatBox({
     const interval = setInterval(fetchMessages, 3000); // Poll every 3 seconds
     return () => clearInterval(interval);
   }, [teamId]);
+
+  useEffect(() => {
+    const channel = supabase.channel(`chat-typing-${teamId}`);
+    channelRef.current = channel;
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const typing = new Set<string>();
+        for (const key in state) {
+          state[key].forEach((presence: any) => {
+            if (presence.isTyping && presence.userId !== currentUserId) {
+              typing.add(presence.name);
+            }
+          });
+        }
+        setTypingUsers(Array.from(typing));
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [teamId, currentUserId, supabase]);
+
+  useEffect(() => {
+    if (channelRef.current?.state === 'joined') {
+      channelRef.current.track({
+        userId: currentUserId,
+        name: currentUserName,
+        isTyping: input.trim().length > 0,
+      });
+    }
+  }, [input, currentUserId, currentUserName]);
+
+  // Prevent background scrolling when in fullscreen mode
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isFullscreen]);
 
   const handleScroll = () => {
     if (!scrollRef.current) return;
@@ -126,12 +179,29 @@ export function ChatBox({
   };
 
   return (
-    <Card className="flex flex-col h-[400px]">
-      <CardHeader className="py-3 px-4 border-b">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          Team Chat
-        </CardTitle>
-      </CardHeader>
+    <>
+      {isFullscreen && (
+        <div className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" onClick={() => setIsFullscreen(false)} />
+      )}
+      <Card className={cn(
+        "flex flex-col transition-all duration-300",
+        isFullscreen 
+          ? "fixed inset-4 md:inset-10 z-50 h-auto shadow-2xl" 
+          : "h-[400px]"
+      )}>
+        <CardHeader className="py-3 px-4 border-b flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            Team Chat
+          </CardTitle>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </Button>
+        </CardHeader>
       <CardContent className="flex-1 p-0 flex flex-col min-h-0 relative">
         <div className="flex-1 p-4 overflow-y-auto" ref={scrollRef} onScroll={handleScroll}>
           <div className="space-y-4">
@@ -219,6 +289,20 @@ export function ChatBox({
                 );
               })
             )}
+            
+            {/* Typing Indicator */}
+            {typingUsers.length > 0 && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground ml-2">
+                <div className="flex space-x-1 bg-muted px-2 py-1.5 rounded-full items-center">
+                  <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                </div>
+                <span>
+                  {typingUsers.join(", ")} {typingUsers.length > 1 ? "are" : "is"} typing
+                </span>
+              </div>
+            )}
           </div>
         </div>
         
@@ -265,5 +349,6 @@ export function ChatBox({
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }

@@ -243,7 +243,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
           />
         ))}
 
-        <ChatBox teamId={teamId} currentUserId={user.id} />
+        <ChatBox teamId={teamId} currentUserId={user.id} currentUserName={user.name} />
       </div>
 
       {/* Dashboard grid */}
