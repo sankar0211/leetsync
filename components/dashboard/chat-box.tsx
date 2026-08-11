@@ -11,6 +11,10 @@ import { createClient } from "@/lib/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CodeBlock } from "@/components/ui/code-block";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ReactMarkdown from "react-markdown";
+import TextareaAutosize from "react-textarea-autosize";
+import remarkGfm from "remark-gfm";
+import remarkBreaks from "remark-breaks";
 
 type Message = {
   id: string;
@@ -324,7 +328,11 @@ export function ChatBox({
                             {activeTab === "SOLUTION" ? (
                               <CodeBlock code={msg.content} language={msg.metadata?.language || "Code"} />
                             ) : (
-                              msg.content
+                              <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 whitespace-pre-wrap">
+                                <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+                                  {msg.content}
+                                </ReactMarkdown>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -396,13 +404,21 @@ export function ChatBox({
                     className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none font-mono"
                   />
                 ) : (
-                  <Input
+                  <TextareaAutosize
                     ref={inputRef as any}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        if (input.trim() && !isSending) {
+                          handleSend(e as any);
+                        }
+                      }
+                    }}
                     placeholder={activeTab === "FEEDBACK" ? "Share your feedback/suggestions..." : "Type a message..."}
-                    className="flex-1"
-                    autoComplete="off"
+                    className="flex-1 flex min-h-[40px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                    maxRows={5}
                   />
                 )}
                 
