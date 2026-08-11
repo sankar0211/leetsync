@@ -18,7 +18,7 @@ export function LeetAIButton() {
         rel="noopener noreferrer"
         className="block relative"
       >
-        <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 opacity-70 blur group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+        <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 opacity-0 blur group-hover:opacity-100 transition-opacity duration-500" />
         
         <Button 
           size="lg" 
