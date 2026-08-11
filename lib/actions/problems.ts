@@ -75,6 +75,29 @@ export async function submitDailyProblems(
     return { error: parsed.error.issues[0].message };
   }
 
+  // Validate that these problems haven't been solved by the team before
+  const pastDailyProblems = await prisma.dailyProblem.findMany({
+    where: { teamId },
+    select: { problemsData: true, problem1Number: true, problem2Number: true },
+  });
+
+  const historicalProblemNumbers = new Set<number>();
+  for (const dp of pastDailyProblems) {
+    if (dp.problemsData) {
+      const pData = dp.problemsData as { number: number, name: string }[];
+      pData.forEach(p => historicalProblemNumbers.add(p.number));
+    }
+    // Fallback for older data structure just in case
+    if (dp.problem1Number) historicalProblemNumbers.add(dp.problem1Number);
+    if (dp.problem2Number) historicalProblemNumbers.add(dp.problem2Number);
+  }
+
+  for (const p of parsed.data.problems) {
+    if (historicalProblemNumbers.has(p.number)) {
+      return { error: `Problem #${p.number} (${p.name}) has already been set for this team previously!` };
+    }
+  }
+
   // Create DailyProblem + log activity
   await prisma.$transaction([
     prisma.dailyProblem.create({

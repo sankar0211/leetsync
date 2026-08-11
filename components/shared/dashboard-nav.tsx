@@ -51,42 +51,34 @@ export function DashboardNav({ user }: DashboardNavProps) {
                 </Button>
               }
             />
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-56">
+              <div className="px-2 py-1.5 flex items-center gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.avatarUrl || ""} alt={user.name} />
+                  <AvatarFallback className="bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium leading-none">{user.name}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    @{user.username}
+                  </p>
+                </div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem render={<Link href="/profile" />}>
+                Profile Settings
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem render={<Link href="/dashboard" />}>
+                My Teams
+              </DropdownMenuItem>
               <DropdownMenuItem render={<Link href="/create-team" />}>
                 Create Team
               </DropdownMenuItem>
               <DropdownMenuItem render={<Link href="/join-team" />}>
                 Join Team
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem render={<Link href="/dashboard" />}>
-                My Teams
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="rounded-full" />}>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user.avatarUrl || ""} alt={user.name} />
-                <AvatarFallback className="bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-1.5">
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  @{user.username}
-                </p>
-              </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem render={<Link href="/dashboard" />}>
-                My Teams
-              </DropdownMenuItem>
-              <DropdownMenuItem render={<Link href="/profile" />}>
-                Profile Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

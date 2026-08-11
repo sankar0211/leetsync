@@ -135,6 +135,15 @@ model ActivityLog {
 }
 
 // ──────────────────────────────────────────────
+// MessageType — enum for discussion message types
+// ──────────────────────────────────────────────
+enum MessageType {
+  GENERAL
+  SOLUTION
+  FEEDBACK
+}
+
+// ──────────────────────────────────────────────
 // Message — team chat messages
 // ──────────────────────────────────────────────
 model Message {
@@ -142,6 +151,8 @@ model Message {
   teamId           String
   userId           String
   content          String
+  type             MessageType        @default(GENERAL)
+  metadata         Json?
   createdAt        DateTime           @default(now())
 
   replyToId        String?

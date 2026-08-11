@@ -3,7 +3,9 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "./auth";
 
-export async function getMessages(teamId: string) {
+import { MessageType } from "@/app/generated/prisma/client";
+
+export async function getMessages(teamId: string, type?: MessageType) {
   const user = await getCurrentUser();
   if (!user) return { error: "Not authenticated" };
 
@@ -14,7 +16,7 @@ export async function getMessages(teamId: string) {
   if (!membership) return { error: "Not a team member" };
 
   const messages = await prisma.message.findMany({
-    where: { teamId },
+    where: type ? { teamId, type } : { teamId },
     orderBy: { createdAt: "asc" },
     include: {
       user: {
@@ -34,7 +36,7 @@ export async function getMessages(teamId: string) {
   return { messages };
 }
 
-export async function sendMessage(teamId: string, content: string, replyToId?: string) {
+export async function sendMessage(teamId: string, content: string, replyToId?: string, type: MessageType = "GENERAL", metadata?: any) {
   const user = await getCurrentUser();
   if (!user) return { error: "Not authenticated" };
 
@@ -63,6 +65,8 @@ export async function sendMessage(teamId: string, content: string, replyToId?: s
       teamId,
       userId: user.id,
       content: content.trim(),
+      type,
+      metadata: metadata ? metadata : undefined,
       replyToId: replyToId || null,
     },
     include: {
