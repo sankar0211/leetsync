@@ -36,12 +36,12 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
       problem2Number: true,
       problem2Name: true,
       problemSetter: {
-        select: { id: true, name: true, username: true },
+        select: { id: true, name: true, username: true, avatarUrl: true },
       },
       completions: {
         include: {
           user: {
-            select: { id: true, name: true, username: true },
+            select: { id: true, name: true, username: true, avatarUrl: true },
           },
         },
       },
@@ -52,7 +52,7 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
   const members = await prisma.teamMembership.findMany({
     where: { teamId },
     include: {
-      user: { select: { id: true, name: true, username: true } },
+      user: { select: { id: true, name: true, username: true, avatarUrl: true } },
     },
     orderBy: { rotationPosition: "asc" },
   });

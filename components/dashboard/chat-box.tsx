@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { CodeBlock } from "@/components/ui/code-block";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Message = {
   id: string;
@@ -27,12 +28,14 @@ type Message = {
       id: string;
       name: string;
       username: string;
+      avatarUrl?: string | null;
     };
   } | null;
   user: {
     id: string;
     name: string;
     username: string;
+    avatarUrl?: string | null;
   };
 };
 
@@ -172,7 +175,7 @@ export function ChatBox({
           content: replyToCopy.content,
           user: replyToCopy.user,
         } : null,
-        user: { id: currentUserId, name: "Sending...", username: "sending" },
+        user: { id: currentUserId, name: "Sending...", username: "sending", avatarUrl: null },
       },
     ]);
 
@@ -260,6 +263,12 @@ export function ChatBox({
                               isMe && "flex-row-reverse"
                             )}
                           >
+                            <Avatar className="h-5 w-5 mr-1 inline-block">
+                              <AvatarImage src={msg.user.avatarUrl || ""} alt={msg.user.name} />
+                              <AvatarFallback className="text-[10px] bg-emerald-500/20 text-emerald-400">
+                                {msg.user.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
                             <span className="text-xs font-medium text-foreground">
                               {isMe ? "You" : msg.user.name}
                             </span>

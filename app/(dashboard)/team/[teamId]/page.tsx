@@ -171,7 +171,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
   const recentActivity = await prisma.activityLog.findMany({
     where: { teamId },
     include: {
-      user: { select: { id: true, name: true, username: true } },
+      user: { select: { id: true, name: true, username: true, avatarUrl: true } },
     },
     orderBy: { createdAt: "desc" },
     take: 20,

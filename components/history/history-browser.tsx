@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { dailyScore } from "@/lib/utils/scoring";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface DailyProblem {
   id: string;
@@ -28,7 +29,7 @@ interface DailyProblem {
 
 interface HistoryBrowserProps {
   dailyProblems: DailyProblem[];
-  members: { userId: string; name: string; username: string }[];
+  members: { userId: string; name: string; username: string; avatarUrl?: string | null }[];
 }
 
 export function HistoryBrowser({
@@ -197,9 +198,17 @@ export function HistoryBrowser({
                           key={member.userId}
                           className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
                         >
-                          <span className="font-medium text-sm">
-                            {member.name}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={member.avatarUrl || ""} alt={member.name} />
+                              <AvatarFallback className="text-[10px] bg-emerald-500/20 text-emerald-400">
+                                {member.name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium text-sm">
+                              {member.name}
+                            </span>
+                          </div>
                           <div className="flex items-center gap-4">
                             <div className="flex items-center gap-1">
                               <span className="text-xs text-muted-foreground">

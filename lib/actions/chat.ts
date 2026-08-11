@@ -20,12 +20,12 @@ export async function getMessages(teamId: string, type?: MessageType) {
     orderBy: { createdAt: "asc" },
     include: {
       user: {
-        select: { id: true, name: true, username: true },
+        select: { id: true, name: true, username: true, avatarUrl: true },
       },
       replyTo: {
         include: {
           user: {
-            select: { id: true, name: true, username: true },
+            select: { id: true, name: true, username: true, avatarUrl: true },
           },
         },
       },
@@ -71,12 +71,12 @@ export async function sendMessage(teamId: string, content: string, replyToId?: s
     },
     include: {
       user: {
-        select: { id: true, name: true, username: true },
+        select: { id: true, name: true, username: true, avatarUrl: true },
       },
       replyTo: {
         include: {
           user: {
-            select: { id: true, name: true, username: true },
+            select: { id: true, name: true, username: true, avatarUrl: true },
           },
         },
       },

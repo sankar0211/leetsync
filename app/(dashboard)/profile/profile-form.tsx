@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,7 @@ export function ProfileForm({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const supabase = createClient();
 
@@ -81,6 +82,7 @@ export function ProfileForm({
     } else {
       setSuccess(true);
       setFile(null); // Clear file so it doesn't re-upload
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
     setIsLoading(false);
   };
@@ -94,21 +96,42 @@ export function ProfileForm({
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-6">
           <div className="flex flex-col items-center space-y-4">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={avatarUrl} alt={name} />
-              <AvatarFallback className="text-2xl bg-emerald-500/20 text-emerald-400">{initials}</AvatarFallback>
-            </Avatar>
-            <div className="w-full">
-              <Label htmlFor="avatarFile">Profile Image</Label>
-              <Input
-                id="avatarFile"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="mt-1"
-              />
-              <p className="text-xs text-muted-foreground mt-1">Upload a new profile picture.</p>
+            <div 
+              className="relative group cursor-pointer" 
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Avatar className="h-24 w-24 transition-opacity group-hover:opacity-80">
+                <AvatarImage src={avatarUrl} alt={name} />
+                <AvatarFallback className="text-2xl bg-emerald-500/20 text-emerald-400">{initials}</AvatarFallback>
+              </Avatar>
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-black/40">
+                <span className="text-xs text-white font-medium">Change</span>
+              </div>
             </div>
+            
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              ref={fileInputRef}
+            />
+            
+            {avatarUrl && (
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  setAvatarUrl("");
+                  setFile(null);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+                className="text-xs text-muted-foreground hover:text-destructive h-7"
+              >
+                Remove Avatar
+              </Button>
+            )}
           </div>
 
           <div className="space-y-2">

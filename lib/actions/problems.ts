@@ -271,12 +271,12 @@ export async function getTodaysProblems(teamId: string) {
     where: { teamId_date: { teamId, date: today } },
     include: {
       problemSetter: {
-        select: { id: true, name: true, username: true },
+        select: { id: true, name: true, username: true, avatarUrl: true },
       },
       completions: {
         include: {
           user: {
-            select: { id: true, name: true, username: true },
+            select: { id: true, name: true, username: true, avatarUrl: true },
           },
         },
       },
@@ -294,12 +294,12 @@ export async function getActiveExtendedProblems(teamId: string) {
     },
     include: {
       problemSetter: {
-        select: { id: true, name: true, username: true },
+        select: { id: true, name: true, username: true, avatarUrl: true },
       },
       completions: {
         include: {
           user: {
-            select: { id: true, name: true, username: true },
+            select: { id: true, name: true, username: true, avatarUrl: true },
           },
         },
       },
@@ -317,12 +317,12 @@ export async function getProblemsForDate(teamId: string, date: Date) {
     where: { teamId_date: { teamId, date } },
     include: {
       problemSetter: {
-        select: { id: true, name: true, username: true },
+        select: { id: true, name: true, username: true, avatarUrl: true },
       },
       completions: {
         include: {
           user: {
-            select: { id: true, name: true, username: true },
+            select: { id: true, name: true, username: true, avatarUrl: true },
           },
         },
       },

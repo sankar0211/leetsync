@@ -12,6 +12,7 @@ import {
   adminResetDailyProblem,
   adminSubmitDailyProblems,
 } from "@/lib/actions/problems";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +30,7 @@ interface AdminPanelProps {
     name: string;
     username: string;
     rotationPosition: number;
+    avatarUrl?: string | null;
   }[];
 }
 
@@ -398,6 +400,12 @@ export function AdminPanel({
                 <Badge variant="secondary" className="text-xs font-mono w-6 justify-center">
                   {index + 1}
                 </Badge>
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={member.avatarUrl || ""} alt={member.name} />
+                  <AvatarFallback className="text-[10px] bg-emerald-500/20 text-emerald-400">
+                    {member.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
                 <span className="text-sm font-medium">{member.name}</span>
               </div>
               <div className="flex gap-1">

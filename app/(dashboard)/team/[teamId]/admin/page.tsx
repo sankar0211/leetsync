@@ -24,7 +24,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
     include: {
       memberships: {
         include: {
-          user: { select: { id: true, name: true, username: true } },
+          user: { select: { id: true, name: true, username: true, avatarUrl: true } },
         },
         orderBy: { rotationPosition: "asc" },
       },
@@ -57,6 +57,7 @@ export default async function AdminPage({ params }: AdminPageProps) {
           userId: m.userId,
           name: m.user.name,
           username: m.user.username,
+          avatarUrl: m.user.avatarUrl,
           rotationPosition: m.rotationPosition,
         }))}
       />

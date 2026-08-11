@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Activity {
   id: string;
@@ -12,6 +13,7 @@ interface Activity {
     id: string;
     name: string;
     username: string;
+    avatarUrl?: string | null;
   } | null;
 }
 
@@ -47,9 +49,23 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
               transition={{ delay: index * 0.03 }}
               className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-muted/30 transition-colors"
             >
-              <span className="text-sm mt-0.5">
-                {typeIcons[activity.type] ?? "📌"}
-              </span>
+              <div className="flex items-center gap-2 mt-0.5 relative">
+                {activity.user ? (
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={activity.user.avatarUrl || ""} alt={activity.user.name} />
+                    <AvatarFallback className="text-[10px] bg-emerald-500/20 text-emerald-400">
+                      {activity.user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-[10px]">📌</span>
+                  </div>
+                )}
+                <span className="text-sm absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 shadow-sm leading-none text-[10px]">
+                  {typeIcons[activity.type] ?? "📌"}
+                </span>
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm">{activity.message}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
