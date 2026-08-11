@@ -11,8 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu } from "lucide-react";
-import { ThemeToggle } from "./theme-toggle";
+import { Menu, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface DashboardNavProps {
   user: {
@@ -25,6 +25,8 @@ interface DashboardNavProps {
 }
 
 export function DashboardNav({ user }: DashboardNavProps) {
+  const { setTheme, theme } = useTheme();
+
   const initials = user.name
     .split(" ")
     .map((n) => n[0])
@@ -44,8 +46,6 @@ export function DashboardNav({ user }: DashboardNavProps) {
         </Link>
 
         <div className="flex items-center gap-3">
-          <ThemeToggle />
-          
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
@@ -70,6 +70,13 @@ export function DashboardNav({ user }: DashboardNavProps) {
                 </div>
               </div>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setTheme(theme === "light" ? "dark" : "light")} className="flex items-center justify-between cursor-pointer">
+                <span>Toggle Theme</span>
+                <div className="flex items-center">
+                  <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                </div>
+              </DropdownMenuItem>
               <DropdownMenuItem render={<Link href="/profile" />}>
                 Profile Settings
               </DropdownMenuItem>
