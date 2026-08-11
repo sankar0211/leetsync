@@ -145,3 +145,21 @@
     @apply font-sans;
   }
 }
+
+.prose-primary-foreground {
+  --tw-prose-body: var(--primary-foreground);
+  --tw-prose-headings: var(--primary-foreground);
+  --tw-prose-links: var(--primary-foreground);
+  --tw-prose-bold: var(--primary-foreground);
+  --tw-prose-counters: var(--primary-foreground);
+  --tw-prose-bullets: var(--primary-foreground);
+  --tw-prose-hr: color-mix(in srgb, var(--primary-foreground) 20%, transparent);
+  --tw-prose-quotes: var(--primary-foreground);
+  --tw-prose-quote-borders: color-mix(in srgb, var(--primary-foreground) 20%, transparent);
+  --tw-prose-captions: var(--primary-foreground);
+  --tw-prose-code: var(--primary-foreground);
+  --tw-prose-pre-code: var(--primary-foreground);
+  --tw-prose-pre-bg: color-mix(in srgb, var(--primary-foreground) 10%, transparent);
+  --tw-prose-th-borders: color-mix(in srgb, var(--primary-foreground) 20%, transparent);
+  --tw-prose-td-borders: color-mix(in srgb, var(--primary-foreground) 10%, transparent);
+}

@@ -328,7 +328,10 @@ export function ChatBox({
                             {activeTab === "SOLUTION" ? (
                               <CodeBlock code={msg.content} language={msg.metadata?.language || "Code"} />
                             ) : (
-                              <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 whitespace-pre-wrap">
+                              <div className={cn(
+                                "prose prose-sm max-w-none break-words [&>p]:mb-2 [&>p:last-child]:mb-0 whitespace-pre-wrap",
+                                isMe ? "prose-primary-foreground" : "dark:prose-invert"
+                              )}>
                                 <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
                                   {msg.content}
                                 </ReactMarkdown>
