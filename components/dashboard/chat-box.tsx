@@ -364,7 +364,7 @@ export function ChatBox({
               {activeTab === "SOLUTION" && (
                 <div className="flex gap-2">
                   <select 
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 max-w-[150px]"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 max-w-[150px]"
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                   >

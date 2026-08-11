@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu } from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
 
 interface DashboardNavProps {
   user: {
@@ -43,6 +44,8 @@ export function DashboardNav({ user }: DashboardNavProps) {
         </Link>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+          
           <DropdownMenu>
             <DropdownMenuTrigger
               render={

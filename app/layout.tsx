@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { MeshBackground } from "@/components/shared/mesh-background";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -34,9 +33,6 @@ export default function RootLayout({
         >
           <MeshBackground />
           {children}
-          <div className="fixed bottom-6 right-6 z-50">
-            <ThemeToggle />
-          </div>
         </ThemeProvider>
       </body>
     </html>
