@@ -10,10 +10,11 @@ import { dailyScore } from "@/lib/utils/scoring";
 interface DailyProblem {
   id: string;
   date: string;
-  problem1Number: number;
-  problem1Name: string;
-  problem2Number: number;
-  problem2Name: string;
+  problemsData?: { number: number; name: string }[] | null;
+  problem1Number: number | null;
+  problem1Name: string | null;
+  problem2Number: number | null;
+  problem2Name: string | null;
   problemSetter: { id: string; name: string; username: string };
   completions: {
     userId: string;
@@ -118,30 +119,54 @@ export function HistoryBrowser({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="p-3 rounded-lg bg-muted/30">
-                    <span className="text-xs text-muted-foreground">P1: </span>
-                    <a
-                      href={`https://leetcode.com/problems/${selectedProblem.problem1Name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium hover:text-emerald-400 transition-colors"
-                    >
-                      #{selectedProblem.problem1Number} —{" "}
-                      {selectedProblem.problem1Name}
-                    </a>
-                  </div>
-                  <div className="p-3 rounded-lg bg-muted/30">
-                    <span className="text-xs text-muted-foreground">P2: </span>
-                    <a
-                      href={`https://leetcode.com/problems/${selectedProblem.problem2Name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium hover:text-emerald-400 transition-colors"
-                    >
-                      #{selectedProblem.problem2Number} —{" "}
-                      {selectedProblem.problem2Name}
-                    </a>
-                  </div>
+                  {(() => {
+                    let p1Number = selectedProblem.problem1Number;
+                    let p1Name = selectedProblem.problem1Name;
+                    let p2Number = selectedProblem.problem2Number;
+                    let p2Name = selectedProblem.problem2Name;
+                    
+                    if (selectedProblem.problemsData && Array.isArray(selectedProblem.problemsData)) {
+                      if (selectedProblem.problemsData.length > 0) {
+                        p1Number = selectedProblem.problemsData[0].number;
+                        p1Name = selectedProblem.problemsData[0].name;
+                      }
+                      if (selectedProblem.problemsData.length > 1) {
+                        p2Number = selectedProblem.problemsData[1].number;
+                        p2Name = selectedProblem.problemsData[1].name;
+                      }
+                    }
+
+                    return (
+                      <>
+                        {p1Name && p1Number && (
+                          <div className="p-3 rounded-lg bg-muted/30">
+                            <span className="text-xs text-muted-foreground">P1: </span>
+                            <a
+                              href={`https://leetcode.com/problems/${p1Name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium hover:text-emerald-400 transition-colors"
+                            >
+                              #{p1Number} — {p1Name}
+                            </a>
+                          </div>
+                        )}
+                        {p2Name && p2Number && (
+                          <div className="p-3 rounded-lg bg-muted/30">
+                            <span className="text-xs text-muted-foreground">P2: </span>
+                            <a
+                              href={`https://leetcode.com/problems/${p2Name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-medium hover:text-emerald-400 transition-colors"
+                            >
+                              #{p2Number} — {p2Name}
+                            </a>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
 

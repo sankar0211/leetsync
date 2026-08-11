@@ -30,6 +30,7 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
     select: {
       id: true,
       date: true,
+      problemsData: true,
       problem1Number: true,
       problem1Name: true,
       problem2Number: true,
