@@ -248,8 +248,10 @@ export async function extendDailyProblem(teamId: string, dailyProblemId: string)
     return { error: "Only the admin or problem setter can extend time" };
   }
 
-  // Extend by 24 hours from now
-  const newExtension = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  // Extend by 24 hours from current expiry or now
+  const now = new Date();
+  const currentExpiry = dp.extendedUntil && dp.extendedUntil > now ? dp.extendedUntil : now;
+  const newExtension = new Date(currentExpiry.getTime() + 24 * 60 * 60 * 1000);
 
   await prisma.dailyProblem.update({
     where: { id: dailyProblemId },

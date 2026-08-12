@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { MeshBackground } from "@/components/shared/mesh-background";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
         >
           <MeshBackground />
           {children}
+          <Toaster richColors position="top-center" theme="system" />
         </ThemeProvider>
       </body>
     </html>

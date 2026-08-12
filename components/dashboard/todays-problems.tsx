@@ -8,7 +8,9 @@ import { CompletionToggles } from "@/components/problems/completion-toggles";
 import { motion } from "framer-motion";
 import { extendDailyProblem } from "@/lib/actions/problems";
 import { getProblemList } from "@/lib/utils/problems";
-import { Clock } from "lucide-react";
+import { Clock, Loader2 } from "lucide-react";
+import { useTransition } from "react";
+import { toast } from "sonner";
 
 interface TodaysProblemsProps {
   teamId: string;
@@ -51,8 +53,17 @@ export function TodaysProblems({
   const isSetter = currentUserId === problems.problemSetterId;
   const canExtend = isAdmin || isSetter;
 
-  const handleExtend = async () => {
-    await extendDailyProblem(teamId, problems.id);
+  const [isPending, startTransition] = useTransition();
+
+  const handleExtend = () => {
+    startTransition(async () => {
+      const result = await extendDailyProblem(teamId, problems.id);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Problem duration extended by 24 hours!");
+      }
+    });
   };
 
   const formatDate = (d: Date) => {
@@ -63,8 +74,8 @@ export function TodaysProblems({
   };
 
   const isToday = formatDate(problems.date) === formatDate(new Date());
-  // Only visually highlight as extended if it's NOT today's problem
-  const isExtendedDisplay = !isToday && problems.extendedUntil && problems.extendedUntil > new Date();
+  // Show extended badge if it's currently extended beyond now
+  const isExtendedDisplay = problems.extendedUntil && problems.extendedUntil > new Date();
 
   return (
     <motion.div
@@ -90,7 +101,8 @@ export function TodaysProblems({
                 Set by {setterName}
               </Badge>
               {canExtend && (
-                <Button variant="outline" size="sm" onClick={handleExtend} className="text-xs h-6 px-2">
+                <Button variant="outline" size="sm" onClick={handleExtend} disabled={isPending} className="text-xs h-6 px-2">
+                  {isPending ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                   Extend +1 Day
                 </Button>
               )}
