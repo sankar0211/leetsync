@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, Moon, Sun } from "lucide-react";
+import { Menu, Moon, Sun, ChevronDown } from "lucide-react";
 import { useTheme } from "next-themes";
 
 interface DashboardNavProps {
@@ -50,7 +50,12 @@ export function DashboardNav({ user }: DashboardNavProps) {
           <div className="hidden md:flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger
-                render={<Button variant="ghost" className="font-semibold">Teams</Button>}
+                render={
+                  <Button variant="ghost" className="font-semibold gap-1">
+                    Teams
+                    <ChevronDown className="h-4 w-4 opacity-50" />
+                  </Button>
+                }
               />
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem render={<Link href="/dashboard" />}>
