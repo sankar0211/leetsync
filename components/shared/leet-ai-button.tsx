@@ -10,7 +10,10 @@ export function LeetAIButton() {
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.5, type: "spring", stiffness: 200, damping: 20 }}
-      className="fixed bottom-6 right-6 z-50 group"
+      drag
+      dragMomentum={false}
+      whileDrag={{ scale: 1.05 }}
+      className="fixed bottom-6 right-6 z-50 group touch-none"
     >
       <a
         href="https://chatgpt.com/g/g-6a6b7b2007608191bfe2517f175f2ae9-leet-ai"
