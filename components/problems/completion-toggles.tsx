@@ -31,11 +31,13 @@ export function CompletionToggles({
   const [completed, setCompleted] = useState(initialCompleted);
   const [usedAI, setUsedAI] = useState(initialUsedAI);
   const [isPending, startTransition] = useTransition();
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleVerify = () => {
-    if (isLocked) return;
+  const handleVerify = async () => {
+    if (isLocked || isVerifying) return;
 
-    startTransition(async () => {
+    setIsVerifying(true);
+    try {
       const result = await verifyLeetCodeProblem(teamId, dailyProblemId, problemNumber, problemSlug);
       
       if (result.error) {
@@ -44,7 +46,9 @@ export function CompletionToggles({
         setCompleted(true);
         toast.success("Problem successfully verified on LeetCode!");
       }
-    });
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   const handleAIToggle = (checked: boolean) => {
@@ -81,9 +85,9 @@ export function CompletionToggles({
             size="sm" 
             className="h-7 text-xs px-3"
             onClick={handleVerify}
-            disabled={isPending || isLocked}
+            disabled={isVerifying || isLocked}
           >
-            {isPending ? (
+            {isVerifying ? (
               <Loader2 className="h-3 w-3 mr-1 animate-spin" />
             ) : (
               <ExternalLink className="h-3 w-3 mr-1" />
