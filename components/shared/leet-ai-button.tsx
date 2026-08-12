@@ -15,11 +15,9 @@ export function LeetAIButton() {
       whileDrag={{ scale: 1.05 }}
       className="fixed bottom-6 right-6 z-50 group touch-none"
     >
-      <a
-        href="https://chatgpt.com/g/g-6a6b7b2007608191bfe2517f175f2ae9-leet-ai"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block relative"
+      <div
+        onClick={() => window.open("https://chatgpt.com/g/g-6a6b7b2007608191bfe2517f175f2ae9-leet-ai", "_blank")}
+        className="block relative cursor-pointer"
       >
         <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 opacity-0 blur group-hover:opacity-100 transition-opacity duration-500" />
         
@@ -35,7 +33,7 @@ export function LeetAIButton() {
             <span className="text-[10px] text-muted-foreground mt-0.5">Your Coding Agent</span>
           </div>
         </Button>
-      </a>
+      </div>
     </motion.div>
   );
 }
