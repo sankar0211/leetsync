@@ -39,7 +39,7 @@ export function CompletionToggles({
       const result = await verifyLeetCodeProblem(teamId, dailyProblemId, problemNumber, problemSlug);
       
       if (result.error) {
-        toast.error(result.error);
+        toast.error(result.error, { duration: 6000 });
       } else {
         setCompleted(true);
         toast.success("Problem successfully verified on LeetCode!");

@@ -63,7 +63,7 @@ export async function verifyLeetCodeProblem(
     }
 
     return { 
-      error: "We couldn't find an accepted submission for this problem in your recent activity. Make sure you've solved it on LeetCode!" 
+      error: "Problem not found in your recent submissions. If you solved it a long time ago, please submit your solution again on LeetCode to bring it to the top of your recent submissions." 
     };
     
   } catch (error) {
