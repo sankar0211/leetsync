@@ -19,9 +19,11 @@ export function ProfileForm({
     username: string;
     email: string;
     avatarUrl?: string | null;
+    leetcodeUsername?: string | null;
   };
 }) {
   const [name, setName] = useState(user.name);
+  const [leetcodeUsername, setLeetcodeUsername] = useState(user.leetcodeUsername || "");
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || "");
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -80,6 +82,17 @@ export function ProfileForm({
     if (res?.error) {
       setError(res.error);
     } else {
+      // Also update leetcode username if changed
+      if (leetcodeUsername !== (user.leetcodeUsername || "")) {
+        const { updateLeetcodeUsername } = await import("@/lib/actions/profile");
+        const lcRes = await updateLeetcodeUsername(leetcodeUsername);
+        if (lcRes?.error) {
+          setError(lcRes.error);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       setSuccess(true);
       setFile(null); // Clear file so it doesn't re-upload
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -142,6 +155,17 @@ export function ProfileForm({
               onChange={(e) => setName(e.target.value)}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="leetcodeUsername">LeetCode Username</Label>
+            <Input
+              id="leetcodeUsername"
+              value={leetcodeUsername}
+              onChange={(e) => setLeetcodeUsername(e.target.value)}
+              placeholder="Your official LeetCode handle"
+            />
+            <p className="text-xs text-muted-foreground">Required for automated verification.</p>
           </div>
 
           <div className="space-y-2">

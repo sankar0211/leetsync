@@ -20,6 +20,10 @@ const signUpSchema = z
         /^[a-z0-9_]+$/,
         "Username must be lowercase alphanumeric with underscores only"
       ),
+    leetcodeUsername: z
+      .string()
+      .min(1, "LeetCode Username is required")
+      .max(30, "LeetCode Username must be at most 30 characters"),
     email: z.string().email("Invalid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
@@ -45,6 +49,7 @@ export async function signUp(
   const rawData = {
     name: formData.get("name") as string,
     username: (formData.get("username") as string)?.toLowerCase().trim(),
+    leetcodeUsername: (formData.get("leetcodeUsername") as string)?.trim(),
     email: (formData.get("email") as string)?.toLowerCase().trim(),
     password: formData.get("password") as string,
     confirmPassword: formData.get("confirmPassword") as string,
@@ -56,7 +61,7 @@ export async function signUp(
     return { error: parsed.error.issues[0].message };
   }
 
-  const { name, username, email, password } = parsed.data;
+  const { name, username, leetcodeUsername, email, password } = parsed.data;
 
   // Check username uniqueness
   const existingUser = await prisma.user.findUnique({
@@ -102,6 +107,7 @@ export async function signUp(
         id: authData.user.id,
         name,
         username,
+        leetcodeUsername,
         email,
       },
     });

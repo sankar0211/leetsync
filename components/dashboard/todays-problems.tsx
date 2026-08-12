@@ -134,6 +134,7 @@ export function TodaysProblems({
                   teamId={teamId}
                   dailyProblemId={problems.id}
                   problemNumber={index + 1}
+                  problemSlug={slug}
                   initialCompleted={completion?.completed ?? false}
                   initialUsedAI={completion?.usedLeetAI ?? false}
                   isLocked={!!completion?.completedAt}

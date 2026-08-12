@@ -2,13 +2,18 @@
 
 import { useState, useTransition } from "react";
 import { toggleCompletion } from "@/lib/actions/completions";
+import { verifyLeetCodeProblem } from "@/lib/actions/leetcode";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { Loader2, ExternalLink } from "lucide-react";
+import { toast } from "sonner";
 
 interface CompletionTogglesProps {
   teamId: string;
   dailyProblemId: string;
   problemNumber: number;
+  problemSlug: string;
   initialCompleted: boolean;
   initialUsedAI: boolean;
   isLocked: boolean; // completedAt is already set
@@ -18,6 +23,7 @@ export function CompletionToggles({
   teamId,
   dailyProblemId,
   problemNumber,
+  problemSlug,
   initialCompleted,
   initialUsedAI,
   isLocked,
@@ -26,22 +32,17 @@ export function CompletionToggles({
   const [usedAI, setUsedAI] = useState(initialUsedAI);
   const [isPending, startTransition] = useTransition();
 
-  const handleCompletionToggle = (checked: boolean) => {
-    // Once locked (completedAt set), cannot un-complete
-    if (isLocked && !checked) return;
+  const handleVerify = () => {
+    if (isLocked) return;
 
-    setCompleted(checked);
     startTransition(async () => {
-      const result = await toggleCompletion(
-        teamId,
-        dailyProblemId,
-        problemNumber,
-        checked,
-        usedAI
-      );
+      const result = await verifyLeetCodeProblem(teamId, dailyProblemId, problemNumber, problemSlug);
+      
       if (result.error) {
-        // Revert on error
-        setCompleted(!checked);
+        toast.error(result.error);
+      } else {
+        setCompleted(true);
+        toast.success("Problem successfully verified on LeetCode!");
       }
     });
   };
@@ -65,22 +66,31 @@ export function CompletionToggles({
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-2">
-        <Switch
-          checked={completed}
-          onCheckedChange={handleCompletionToggle}
-          disabled={isPending}
-          className="data-[state=checked]:bg-emerald-500"
-        />
-        <motion.span
-          key={completed ? "done" : "todo"}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className={`text-xs font-medium ${
-            completed ? "text-emerald-400" : "text-muted-foreground"
-          }`}
-        >
-          {completed ? "✓ Done" : "Mark done"}
-        </motion.span>
+        {completed ? (
+          <motion.span
+            key="done"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md flex items-center"
+          >
+            ✓ Verified
+          </motion.span>
+        ) : (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-7 text-xs px-3"
+            onClick={handleVerify}
+            disabled={isPending || isLocked}
+          >
+            {isPending ? (
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : (
+              <ExternalLink className="h-3 w-3 mr-1" />
+            )}
+            Verify on LeetCode
+          </Button>
+        )}
       </div>
 
       {completed && (

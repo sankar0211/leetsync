@@ -80,6 +80,20 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="leetcodeUsername">LeetCode Username</Label>
+              <Input
+                id="leetcodeUsername"
+                name="leetcodeUsername"
+                placeholder="Your official LeetCode handle"
+                required
+                autoComplete="off"
+              />
+              <p className="text-xs text-muted-foreground">
+                Required for automatic problem verification
+              </p>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"

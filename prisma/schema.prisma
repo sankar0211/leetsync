@@ -17,6 +17,7 @@ model User {
   id               String             @id // matches Supabase auth.users.id
   name             String
   username         String             @unique
+  leetcodeUsername String?            @unique
   email            String             @unique
   avatarUrl        String?
   createdAt        DateTime           @default(now())
