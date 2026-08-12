@@ -21,27 +21,42 @@ export async function verifyLeetCodeProblem(
   }
 
   try {
-    // We fetch the recent 20 accepted submissions using the Alfa LeetCode API
-    const response = await fetch(`https://alfa-leetcode-api.onrender.com/${user.leetcodeUsername}/acSubmission`, {
+    // We fetch the recent 20 accepted submissions directly from LeetCode's public GraphQL API
+    const query = `
+      query getRecentSubmissionList($username: String!) {
+        recentAcSubmissionList(username: $username, limit: 20) {
+          titleSlug
+        }
+      }
+    `;
+
+    const response = await fetch("https://leetcode.com/graphql", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Referer": "https://leetcode.com",
+      },
+      body: JSON.stringify({
+        query,
+        variables: { username: user.leetcodeUsername }
+      }),
       cache: "no-store", // Don't cache so we get fresh submissions
     });
 
     if (!response.ok) {
-      if (response.status === 404) {
-        return { error: "LeetCode account not found. Please check your username in profile settings." };
-      }
       return { error: "Failed to connect to LeetCode API. Please try again later." };
     }
 
     const data = await response.json();
     
     // Safety check on API response structure
-    if (!data || !Array.isArray(data.submission)) {
-      return { error: "Invalid response from LeetCode. Your profile might be private." };
+    const submissions = data?.data?.recentAcSubmissionList;
+    if (!submissions || !Array.isArray(submissions)) {
+      return { error: "Invalid response from LeetCode. Your profile might be private or username is incorrect." };
     }
 
     // Check if the required problem is in their recent accepted submissions
-    const hasCompleted = data.submission.some(
+    const hasCompleted = submissions.some(
       (sub: any) => sub.titleSlug === problemSlug
     );
 
