@@ -34,6 +34,13 @@ export async function toggleCompletion(
     return { error: "Invalid problem number" };
   }
 
+  const dp = await prisma.dailyProblem.findUnique({
+    where: { id: dailyProblemId },
+    select: { date: true }
+  });
+  if (!dp) return { error: "Daily problem not found" };
+  const dateStr = dp.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
   // Fetch existing record
   const existing = await prisma.completionRecord.findUnique({
     where: {
@@ -108,7 +115,7 @@ export async function toggleCompletion(
         teamId,
         userId: user.id,
         type: "PROBLEM_COMPLETED",
-        message: `${user.name} completed Problem ${problemNumber}`,
+        message: `${user.name} completed Problem ${problemNumber} for ${dateStr}`,
       },
     });
 
@@ -130,7 +137,7 @@ export async function toggleCompletion(
           teamId,
           userId: user.id,
           type: "BOTH_COMPLETED",
-          message: `${user.name} completed both problems!`,
+          message: `${user.name} completed both problems for ${dateStr}!`,
         },
       });
     }
