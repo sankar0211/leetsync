@@ -205,6 +205,8 @@ export function AdminPanel({
       }
       // If successful, deleteTeam redirects
     });
+  };
+
   const problemsDataStr = JSON.stringify(
     [
       { number: parseInt(problem1Number, 10), name: problem1Name },
