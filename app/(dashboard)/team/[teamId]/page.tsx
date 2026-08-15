@@ -55,7 +55,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
   // Get today's problems and any extended problems
   const todaysProblems = await getTodaysProblems(teamId);
   const { getActiveExtendedProblems } = await import("@/lib/actions/problems");
-  const extendedProblems = await getActiveExtendedProblems(teamId);
+  const extendedProblems = await getActiveExtendedProblems(teamId, user.id);
 
   // Determine if current user is today's setter
   const isCurrentUserSetter = todaysSetterId === user.id;

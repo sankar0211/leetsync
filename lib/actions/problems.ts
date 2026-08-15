@@ -316,9 +316,9 @@ export async function getTodaysProblems(teamId: string) {
   });
 }
 
-export async function getActiveExtendedProblems(teamId: string) {
+export async function getActiveExtendedProblems(teamId: string, userId: string) {
   const today = getToday();
-  return prisma.dailyProblem.findMany({
+  const problems = await prisma.dailyProblem.findMany({
     where: {
       teamId,
       date: { not: today },
@@ -337,6 +337,12 @@ export async function getActiveExtendedProblems(teamId: string) {
       },
     },
     orderBy: { date: "desc" },
+  });
+
+  return problems.filter((dp) => {
+    const totalProblems = dp.problemsData ? (dp.problemsData as any[]).length : 2;
+    const userCompletions = dp.completions.filter((c) => c.userId === userId && c.completed);
+    return userCompletions.length < totalProblems;
   });
 }
 
