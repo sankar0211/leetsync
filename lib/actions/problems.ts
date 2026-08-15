@@ -339,7 +339,15 @@ export async function getActiveExtendedProblems(teamId: string, userId: string) 
     orderBy: { date: "desc" },
   });
 
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    select: { ownerId: true }
+  });
+  const isAdmin = team?.ownerId === userId;
+
   return problems.filter((dp) => {
+    if (isAdmin || dp.problemSetterId === userId) return true;
+
     const totalProblems = dp.problemsData ? (dp.problemsData as any[]).length : 2;
     const userCompletions = dp.completions.filter((c) => c.userId === userId && c.completed);
     return userCompletions.length < totalProblems;
