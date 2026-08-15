@@ -15,6 +15,7 @@ interface LeaderboardEntry {
   points: number;
   currentStreak: number;
   completedCount: number;
+  fullyCompletedDays: number;
   aiPercentage: number;
   lastCompletionEver: Date | null;
 }
@@ -93,11 +94,12 @@ function LeaderboardList({ data, teamId }: { data: LeaderboardEntry[], teamId: s
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span>🔥 {entry.currentStreak}d</span>
-                    <span>✅ {entry.completedCount}</span>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                    <span title="Current Streak">🔥 {entry.currentStreak}d</span>
+                    <span title="Days Fully Completed">🎯 {entry.fullyCompletedDays}</span>
+                    <span title="Total Problems Solved">✅ {entry.completedCount}</span>
                     {entry.aiPercentage > 0 && (
-                      <span>🤖 {entry.aiPercentage}%</span>
+                      <span title="AI Usage">🤖 {entry.aiPercentage}%</span>
                     )}
                   </div>
                 </div>

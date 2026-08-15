@@ -83,6 +83,12 @@ export default async function TeamPage({ params }: TeamPageProps) {
       const completedCount = userCompletions.filter((c) => c.completed).length;
       const aiPct = aiUsagePercentage(userCompletions);
 
+      const fullyCompletedDays = problemsList.filter((dp) => {
+        const totalProblems = dp.problemsData ? (dp.problemsData as any[]).length : 2;
+        const userComps = dp.completions.filter((c) => c.userId === member.userId && c.completed);
+        return userComps.length === totalProblems && totalProblems > 0;
+      }).length;
+
       const dayScores = problemsList.map((dp) => ({
         date: dp.date,
         score: dailyScore(
@@ -109,6 +115,7 @@ export default async function TeamPage({ params }: TeamPageProps) {
         currentStreak: streaks.current,
         longestStreak: streaks.longest,
         completedCount,
+        fullyCompletedDays,
         aiPercentage: aiPct,
         lastCompletionEver,
       };
