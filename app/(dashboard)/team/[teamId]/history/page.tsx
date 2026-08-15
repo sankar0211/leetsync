@@ -68,6 +68,7 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
       <HistoryBrowser
         teamId={teamId}
         isAdmin={team.ownerId === user.id}
+        currentUserId={user.id}
         dailyProblems={JSON.parse(JSON.stringify(dailyProblems))}
         members={members.map((m) => ({
           userId: m.userId,

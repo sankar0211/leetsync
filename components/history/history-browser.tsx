@@ -33,6 +33,7 @@ interface DailyProblem {
 interface HistoryBrowserProps {
   teamId: string;
   isAdmin: boolean;
+  currentUserId: string;
   dailyProblems: DailyProblem[];
   members: { userId: string; name: string; username: string; avatarUrl?: string | null }[];
 }
@@ -40,6 +41,7 @@ interface HistoryBrowserProps {
 export function HistoryBrowser({
   teamId,
   isAdmin,
+  currentUserId,
   dailyProblems,
   members,
 }: HistoryBrowserProps) {
@@ -123,7 +125,7 @@ export function HistoryBrowser({
                       )}
                     </CardTitle>
                     <div className="flex gap-2 items-center">
-                      {isAdmin && selectedProblem && (
+                      {(isAdmin || selectedProblem?.problemSetter.id === currentUserId) && selectedProblem && (
                         <>
                           {selectedProblem.extendedUntil && new Date(selectedProblem.extendedUntil) > new Date() ? (
                             <Button 
