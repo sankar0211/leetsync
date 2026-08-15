@@ -143,7 +143,7 @@ export function HistoryBrowser({
                               disabled={isPending}
                               onClick={() => startTransition(async () => { await extendDailyProblem(teamId, selectedProblem.id); })}
                             >
-                              Open 24h
+                              Extend 24 hr
                             </Button>
                           )}
                         </>
