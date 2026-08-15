@@ -31,6 +31,7 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
       id: true,
       date: true,
       extendedUntil: true,
+      personalExtensions: true,
       problemsData: true,
       problem1Number: true,
       problem1Name: true,

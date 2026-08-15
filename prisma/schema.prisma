@@ -79,6 +79,7 @@ model DailyProblem {
   
   problemsData     Json?              // Array of { number: number, name: string }
   extendedUntil    DateTime?
+  personalExtensions Json?            @default("[]") // Array of { userId: string, extendedUntil: Date }
   createdAt        DateTime           @default(now())
 
   team             Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)

@@ -125,31 +125,65 @@ export function HistoryBrowser({
                       )}
                     </CardTitle>
                     <div className="flex gap-2 items-center">
-                      {(isAdmin || selectedProblem?.problemSetter.id === currentUserId) && selectedProblem && (
-                        <>
-                          {selectedProblem.extendedUntil && new Date(selectedProblem.extendedUntil) > new Date() ? (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="border-orange-500 text-orange-500 hover:bg-orange-500/10"
-                              disabled={isPending}
-                              onClick={() => startTransition(async () => { await revokeDailyProblem(teamId, selectedProblem.id); })}
-                            >
-                              Revoke
-                            </Button>
-                          ) : (
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              className="border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
-                              disabled={isPending}
-                              onClick={() => startTransition(async () => { await extendDailyProblem(teamId, selectedProblem.id); })}
-                            >
-                              Extend 24 hr
-                            </Button>
-                          )}
-                        </>
-                      )}
+                      {(() => {
+                        if (!selectedProblem) return null;
+                        
+                        const now = new Date();
+                        const isTeamExtended = selectedProblem.extendedUntil && new Date(selectedProblem.extendedUntil) > now;
+                        const personalExtensions = (selectedProblem as any).personalExtensions || [];
+                        const myPersonalExt = personalExtensions.find((p: any) => p.userId === currentUserId);
+                        const isPersonallyExtended = myPersonalExt && new Date(myPersonalExt.extendedUntil) > now;
+
+                        const canManageTeam = isAdmin || selectedProblem.problemSetter.id === currentUserId;
+
+                        return (
+                          <>
+                            {isTeamExtended ? (
+                              canManageTeam && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="border-orange-500 text-orange-500 hover:bg-orange-500/10"
+                                  disabled={isPending}
+                                  onClick={() => startTransition(async () => { await revokeDailyProblem(teamId, selectedProblem.id); })}
+                                >
+                                  Revoke Team Ext
+                                </Button>
+                              )
+                            ) : (
+                              canManageTeam && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
+                                  disabled={isPending}
+                                  onClick={() => startTransition(async () => { await extendDailyProblem(teamId, selectedProblem.id, "TEAM"); })}
+                                >
+                                  Extend for Team
+                                </Button>
+                              )
+                            )}
+
+                            {!isTeamExtended && !isPersonallyExtended && (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                                disabled={isPending}
+                                onClick={() => startTransition(async () => { await extendDailyProblem(teamId, selectedProblem.id, "PERSONAL"); })}
+                              >
+                                Extend for Me
+                              </Button>
+                            )}
+
+                            {!isTeamExtended && isPersonallyExtended && (
+                              <Badge variant="outline" className="border-blue-500 text-blue-500">
+                                Extended for you
+                              </Badge>
+                            )}
+                          </>
+                        );
+                      })()}
                       <Badge variant="secondary">
                         Set by {selectedProblem.problemSetter.name}
                       </Badge>

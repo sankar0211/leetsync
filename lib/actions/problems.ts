@@ -228,7 +228,7 @@ export async function adminSubmitDailyProblems(
   return { error: null };
 }
 
-export async function extendDailyProblem(teamId: string, dailyProblemId: string) {
+export async function extendDailyProblem(teamId: string, dailyProblemId: string, extensionType: "TEAM" | "PERSONAL") {
   const user = await getCurrentUser();
   if (!user) return { error: "Not authenticated" };
 
@@ -243,20 +243,41 @@ export async function extendDailyProblem(teamId: string, dailyProblemId: string)
     return { error: "Not found" };
   }
 
-  // Must be admin or original setter
-  if (team.ownerId !== user.id && dp.problemSetterId !== user.id) {
-    return { error: "Only the admin or problem setter can extend time" };
-  }
-
-  // Extend by 24 hours from current expiry or now
   const now = new Date();
-  const currentExpiry = dp.extendedUntil && dp.extendedUntil > now ? dp.extendedUntil : now;
-  const newExtension = new Date(currentExpiry.getTime() + 24 * 60 * 60 * 1000);
 
-  await prisma.dailyProblem.update({
-    where: { id: dailyProblemId },
-    data: { extendedUntil: newExtension },
-  });
+  if (extensionType === "TEAM") {
+    // Must be admin or original setter
+    if (team.ownerId !== user.id && dp.problemSetterId !== user.id) {
+      return { error: "Only the admin or problem setter can extend time for the team" };
+    }
+
+    const currentExpiry = dp.extendedUntil && dp.extendedUntil > now ? dp.extendedUntil : now;
+    const newExtension = new Date(currentExpiry.getTime() + 24 * 60 * 60 * 1000);
+
+    await prisma.dailyProblem.update({
+      where: { id: dailyProblemId },
+      data: { extendedUntil: newExtension },
+    });
+  } else {
+    // PERSONAL
+    const membership = await prisma.teamMembership.findUnique({
+      where: { userId_teamId: { userId: user.id, teamId } },
+    });
+    if (!membership) return { error: "Not a team member" };
+
+    const personalExtensions = (dp.personalExtensions as any[]) || [];
+    const existing = personalExtensions.find((p: any) => p.userId === user.id);
+    const currentExpiry = existing && new Date(existing.extendedUntil) > now ? new Date(existing.extendedUntil) : now;
+    const newExtension = new Date(currentExpiry.getTime() + 24 * 60 * 60 * 1000);
+
+    const newPersonalExtensions = personalExtensions.filter((p: any) => p.userId !== user.id);
+    newPersonalExtensions.push({ userId: user.id, extendedUntil: newExtension.toISOString() });
+
+    await prisma.dailyProblem.update({
+      where: { id: dailyProblemId },
+      data: { personalExtensions: newPersonalExtensions },
+    });
+  }
 
   revalidatePath(`/team/${teamId}`);
   return { error: null };
@@ -322,7 +343,10 @@ export async function getActiveExtendedProblems(teamId: string, userId: string) 
     where: {
       teamId,
       date: { not: today },
-      extendedUntil: { gt: new Date() },
+      OR: [
+        { extendedUntil: { gt: new Date() } },
+        { personalExtensions: { string_contains: userId } }
+      ]
     },
     include: {
       problemSetter: {
@@ -344,8 +368,15 @@ export async function getActiveExtendedProblems(teamId: string, userId: string) 
     select: { ownerId: true }
   });
   const isAdmin = team?.ownerId === userId;
+  const now = new Date();
 
   return problems.filter((dp) => {
+    const isTeamExtended = dp.extendedUntil && dp.extendedUntil > now;
+    const personalExtensions = (dp.personalExtensions as any[]) || [];
+    const personalExt = personalExtensions.find((p: any) => p.userId === userId);
+    const isPersonallyExtended = personalExt && new Date(personalExt.extendedUntil) > now;
+
+    if (!isTeamExtended && !isPersonallyExtended) return false;
     if (isAdmin || dp.problemSetterId === userId) return true;
 
     const totalProblems = dp.problemsData ? (dp.problemsData as any[]).length : 2;
