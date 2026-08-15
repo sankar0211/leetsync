@@ -205,7 +205,12 @@ export function AdminPanel({
       }
       // If successful, deleteTeam redirects
     });
-  };
+  const problemsDataStr = JSON.stringify(
+    [
+      { number: parseInt(problem1Number, 10), name: problem1Name },
+      { number: parseInt(problem2Number, 10), name: problem2Name }
+    ].filter(p => !isNaN(p.number) && p.name.trim() !== "")
+  );
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -245,6 +250,7 @@ export function AdminPanel({
             Override the current setter and forcefully assign new problems. Note: Doing this will wipe any completions already made today.
           </p>
           <form onSubmit={handleForceSetProblems} className="space-y-4">
+            <input type="hidden" name="problemsData" value={problemsDataStr} />
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="problem1Number" className="text-xs">Problem 1 Number</Label>

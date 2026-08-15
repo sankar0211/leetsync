@@ -262,6 +262,36 @@ export async function extendDailyProblem(teamId: string, dailyProblemId: string)
   return { error: null };
 }
 
+export async function revokeDailyProblem(teamId: string, dailyProblemId: string) {
+  const user = await getCurrentUser();
+  if (!user) return { error: "Not authenticated" };
+
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+  });
+  const dp = await prisma.dailyProblem.findUnique({
+    where: { id: dailyProblemId },
+  });
+
+  if (!team || !dp || dp.teamId !== teamId) {
+    return { error: "Not found" };
+  }
+
+  // Must be admin
+  if (team.ownerId !== user.id) {
+    return { error: "Only the admin can revoke extended time" };
+  }
+
+  await prisma.dailyProblem.update({
+    where: { id: dailyProblemId },
+    data: { extendedUntil: null },
+  });
+
+  revalidatePath(`/team/${teamId}`);
+  revalidatePath(`/team/${teamId}/history`);
+  return { error: null };
+}
+
 // ──────────────────────────────────────────────
 // Get Today's Problems & Active Extended Problems
 // ──────────────────────────────────────────────

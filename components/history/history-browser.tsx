@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { dailyScore } from "@/lib/utils/scoring";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { extendDailyProblem, revokeDailyProblem } from "@/lib/actions/problems";
+import { useTransition } from "react";
 
 interface DailyProblem {
   id: string;
   date: string;
+  extendedUntil?: string | null;
   problemsData?: { number: number; name: string }[] | null;
   problem1Number: number | null;
   problem1Name: string | null;
@@ -28,14 +31,19 @@ interface DailyProblem {
 }
 
 interface HistoryBrowserProps {
+  teamId: string;
+  isAdmin: boolean;
   dailyProblems: DailyProblem[];
   members: { userId: string; name: string; username: string; avatarUrl?: string | null }[];
 }
 
 export function HistoryBrowser({
+  teamId,
+  isAdmin,
   dailyProblems,
   members,
 }: HistoryBrowserProps) {
+  const [isPending, startTransition] = useTransition();
   const [selectedDate, setSelectedDate] = useState<string | null>(
     dailyProblems.length > 0 ? dailyProblems[0].date : null
   );
@@ -114,9 +122,36 @@ export function HistoryBrowser({
                         }
                       )}
                     </CardTitle>
-                    <Badge variant="secondary">
-                      Set by {selectedProblem.problemSetter.name}
-                    </Badge>
+                    <div className="flex gap-2 items-center">
+                      {isAdmin && selectedProblem && (
+                        <>
+                          {selectedProblem.extendedUntil && new Date(selectedProblem.extendedUntil) > new Date() ? (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="border-orange-500 text-orange-500 hover:bg-orange-500/10"
+                              disabled={isPending}
+                              onClick={() => startTransition(() => revokeDailyProblem(teamId, selectedProblem.id))}
+                            >
+                              Revoke
+                            </Button>
+                          ) : (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
+                              disabled={isPending}
+                              onClick={() => startTransition(() => extendDailyProblem(teamId, selectedProblem.id))}
+                            >
+                              Open 24h
+                            </Button>
+                          )}
+                        </>
+                      )}
+                      <Badge variant="secondary">
+                        Set by {selectedProblem.problemSetter.name}
+                      </Badge>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">

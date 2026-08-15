@@ -19,7 +19,7 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
   // Get team info
   const team = await prisma.team.findUnique({
     where: { id: teamId },
-    select: { id: true, name: true },
+    select: { id: true, name: true, ownerId: true },
   });
   if (!team) notFound();
 
@@ -30,6 +30,7 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
     select: {
       id: true,
       date: true,
+      extendedUntil: true,
       problemsData: true,
       problem1Number: true,
       problem1Name: true,
@@ -65,6 +66,8 @@ export default async function HistoryPage({ params }: HistoryPageProps) {
       </div>
 
       <HistoryBrowser
+        teamId={teamId}
+        isAdmin={team.ownerId === user.id}
         dailyProblems={JSON.parse(JSON.stringify(dailyProblems))}
         members={members.map((m) => ({
           userId: m.userId,
