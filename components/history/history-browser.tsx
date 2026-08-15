@@ -131,7 +131,7 @@ export function HistoryBrowser({
                               size="sm" 
                               className="border-orange-500 text-orange-500 hover:bg-orange-500/10"
                               disabled={isPending}
-                              onClick={() => startTransition(() => revokeDailyProblem(teamId, selectedProblem.id))}
+                              onClick={() => startTransition(async () => { await revokeDailyProblem(teamId, selectedProblem.id); })}
                             >
                               Revoke
                             </Button>
@@ -141,7 +141,7 @@ export function HistoryBrowser({
                               size="sm"
                               className="border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
                               disabled={isPending}
-                              onClick={() => startTransition(() => extendDailyProblem(teamId, selectedProblem.id))}
+                              onClick={() => startTransition(async () => { await extendDailyProblem(teamId, selectedProblem.id); })}
                             >
                               Open 24h
                             </Button>
