@@ -343,10 +343,6 @@ export async function getActiveExtendedProblems(teamId: string, userId: string) 
     where: {
       teamId,
       date: { not: today },
-      OR: [
-        { extendedUntil: { gt: new Date() } },
-        { personalExtensions: { string_contains: userId } }
-      ]
     },
     include: {
       problemSetter: {
