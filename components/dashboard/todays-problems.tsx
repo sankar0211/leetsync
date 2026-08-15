@@ -57,7 +57,7 @@ export function TodaysProblems({
 
   const handleExtend = () => {
     startTransition(async () => {
-      const result = await extendDailyProblem(teamId, problems.id);
+      const result = await extendDailyProblem(teamId, problems.id, "TEAM");
       if (result.error) {
         toast.error(result.error);
       } else {
