@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { MeshBackground } from "@/components/shared/mesh-background";
 import { Toaster } from "sonner";
+import NextTopLoader from "nextjs-toploader";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -32,6 +33,7 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
+          <NextTopLoader color="#10b981" showSpinner={false} />
           <MeshBackground />
           {children}
           <Toaster richColors position="top-center" theme="system" />

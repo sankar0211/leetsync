@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { motion } from "framer-motion";
 
@@ -306,7 +307,11 @@ export function AdminPanel({
               </div>
             </div>
             <Button type="submit" disabled={isPending} className="w-full" size="sm">
-              {isPending ? "Applying Override..." : "Force Set Problems"}
+              {isPending ? (
+                <><Loader2 className="w-3 h-3 animate-spin mr-2 inline" /> Applying Override...</>
+              ) : (
+                "Force Set Problems"
+              )}
             </Button>
           </form>
         </CardContent>

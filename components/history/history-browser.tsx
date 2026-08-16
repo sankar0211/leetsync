@@ -9,6 +9,7 @@ import { dailyScore } from "@/lib/utils/scoring";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { extendDailyProblem, revokeDailyProblem } from "@/lib/actions/problems";
 import { useTransition } from "react";
+import { Loader2 } from "lucide-react";
 
 interface DailyProblem {
   id: string;
@@ -147,6 +148,7 @@ export function HistoryBrowser({
                                   disabled={isPending}
                                   onClick={() => startTransition(async () => { await revokeDailyProblem(teamId, selectedProblem.id); })}
                                 >
+                                  {isPending && <Loader2 className="w-3 h-3 animate-spin mr-1 inline" />}
                                   Revoke Team Ext
                                 </Button>
                               )
@@ -159,6 +161,7 @@ export function HistoryBrowser({
                                   disabled={isPending}
                                   onClick={() => startTransition(async () => { await extendDailyProblem(teamId, selectedProblem.id, "TEAM"); })}
                                 >
+                                  {isPending && <Loader2 className="w-3 h-3 animate-spin mr-1 inline" />}
                                   Extend for Team
                                 </Button>
                               )
@@ -172,6 +175,7 @@ export function HistoryBrowser({
                                 disabled={isPending}
                                 onClick={() => startTransition(async () => { await extendDailyProblem(teamId, selectedProblem.id, "PERSONAL"); })}
                               >
+                                {isPending && <Loader2 className="w-3 h-3 animate-spin mr-1 inline" />}
                                 Extend for Me
                               </Button>
                             )}
