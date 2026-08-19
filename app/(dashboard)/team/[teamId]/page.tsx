@@ -2,7 +2,7 @@ import { getCurrentUser } from "@/lib/actions/auth";
 import { verifyTeamMembership } from "@/lib/actions/team";
 import { getTodaysProblems } from "@/lib/actions/problems";
 import { prisma } from "@/lib/prisma";
-import { getTodaysSetter, getToday } from "@/lib/utils/rotation";
+import { getTodaysSetter, getToday, getTomorrowsSetter, getTomorrow } from "@/lib/utils/rotation";
 import { dailyScore, totalScore, aiUsagePercentage } from "@/lib/utils/scoring";
 import { calculateStreaks } from "@/lib/utils/streaks";
 import { redirect, notFound } from "next/navigation";
@@ -18,10 +18,14 @@ import { Button } from "@/components/ui/button";
 
 interface TeamPageProps {
   params: Promise<{ teamId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function TeamPage({ params }: TeamPageProps) {
+export default async function TeamPage({ params, searchParams }: TeamPageProps) {
   const { teamId } = await params;
+  const sp = await searchParams;
+  const editMode = sp.edit;
+  
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
@@ -52,13 +56,20 @@ export default async function TeamPage({ params }: TeamPageProps) {
     (m) => m.userId === todaysSetterId
   );
 
+  const tomorrowsSetterId = getTomorrowsSetter(team.createdAt, members);
+  const tomorrowsSetter = team.memberships.find(
+    (m) => m.userId === tomorrowsSetterId
+  );
+
   // Get today's problems and any extended problems
   const todaysProblems = await getTodaysProblems(teamId);
-  const { getActiveExtendedProblems } = await import("@/lib/actions/problems");
+  const { getActiveExtendedProblems, getTomorrowsProblems } = await import("@/lib/actions/problems");
+  const tomorrowsProblems = await getTomorrowsProblems(teamId);
   const extendedProblems = await getActiveExtendedProblems(teamId, user.id);
 
   // Determine if current user is today's setter
   const isCurrentUserSetter = todaysSetterId === user.id;
+  const isCurrentUserTomorrowSetter = tomorrowsSetterId === user.id;
   const isAdmin = team.ownerId === user.id;
 
   // ── Leaderboard Data ──
@@ -215,13 +226,19 @@ export default async function TeamPage({ params }: TeamPageProps) {
 
       {/* Today's problems or entry form */}
       <div className="space-y-6">
-        {todaysProblems ? (
+        {editMode === "today" && todaysProblems && (isCurrentUserSetter || isAdmin) ? (
+          <ProblemEntryForm
+            teamId={teamId}
+            initialProblems={todaysProblems.problemsData as any}
+          />
+        ) : todaysProblems ? (
           <TodaysProblems
             teamId={teamId}
             problems={todaysProblems}
             currentUserId={user.id}
             setterName={todaysSetter?.user.name ?? "Unknown"}
             isAdmin={isAdmin}
+            editHref={`/team/${teamId}?edit=today`}
           />
         ) : isCurrentUserSetter ? (
           <ProblemEntryForm teamId={teamId} />
@@ -238,6 +255,29 @@ export default async function TeamPage({ params }: TeamPageProps) {
               Check back soon!
             </p>
           </div>
+        )}
+
+        {/* Tomorrow's Problems */}
+        {isCurrentUserTomorrowSetter && (
+          editMode === "tomorrow" && tomorrowsProblems ? (
+            <ProblemEntryForm
+              teamId={teamId}
+              isTomorrow={true}
+              initialProblems={tomorrowsProblems.problemsData as any}
+            />
+          ) : tomorrowsProblems ? (
+            <TodaysProblems
+              teamId={teamId}
+              problems={tomorrowsProblems}
+              currentUserId={user.id}
+              setterName={tomorrowsSetter?.user.name ?? "Unknown"}
+              isAdmin={isAdmin}
+              isTomorrow={true}
+              editHref={`/team/${teamId}?edit=tomorrow`}
+            />
+          ) : (
+            <ProblemEntryForm teamId={teamId} isTomorrow={true} />
+          )
         )}
 
         {extendedProblems.map(ep => (

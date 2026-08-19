@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "./auth";
-import { getToday, getTodaysSetter } from "@/lib/utils/rotation";
+import { getToday, getTodaysSetter, getTomorrow, getTomorrowsSetter } from "@/lib/utils/rotation";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
@@ -48,19 +48,24 @@ export async function submitDailyProblems(
   });
   if (!team) return { error: "Team not found" };
 
+  const isTomorrow = formData.get("isTomorrow") === "true";
+  const targetDate = isTomorrow ? getTomorrow() : getToday();
+  const dayName = isTomorrow ? "tomorrow's" : "today's";
+
   const todaysSetter = getTodaysSetter(team.createdAt, team.memberships);
-  if (todaysSetter !== user.id) {
-    return { error: "Only today's Problem Setter can submit problems" };
+  const tomorrowsSetter = getTomorrowsSetter(team.createdAt, team.memberships);
+  const isAdmin = team.ownerId === user.id;
+
+  const designatedSetter = isTomorrow ? tomorrowsSetter : todaysSetter;
+  
+  if (designatedSetter !== user.id && !isAdmin) {
+    return { error: `Only ${dayName} Problem Setter (or the Admin) can submit/edit problems` };
   }
 
-  // Check if problems already set for today
-  const today = getToday();
+  // Check if problems already set for target date
   const existing = await prisma.dailyProblem.findUnique({
-    where: { teamId_date: { teamId, date: today } },
+    where: { teamId_date: { teamId, date: targetDate } },
   });
-  if (existing) {
-    return { error: "Problems have already been set for today" };
-  }
 
   // Validate input
   let parsedProblems = [];
@@ -75,14 +80,17 @@ export async function submitDailyProblems(
     return { error: parsed.error.issues[0].message };
   }
 
-  // Validate that these problems haven't been solved by the team before
+  // Validate that these problems haven't been solved by the team before (excluding current problem if editing)
   const pastDailyProblems = await prisma.dailyProblem.findMany({
     where: { teamId },
-    select: { problemsData: true, problem1Number: true, problem2Number: true },
+    select: { id: true, problemsData: true, problem1Number: true, problem2Number: true },
   });
 
   const historicalProblemNumbers = new Set<number>();
   for (const dp of pastDailyProblems) {
+    // If editing, don't flag the problems we are trying to edit
+    if (existing && dp.id === existing.id) continue;
+
     if (dp.problemsData) {
       const pData = dp.problemsData as { number: number, name: string }[];
       pData.forEach(p => historicalProblemNumbers.add(p.number));
@@ -98,25 +106,40 @@ export async function submitDailyProblems(
     }
   }
 
-  // Create DailyProblem + log activity
-  await prisma.$transaction([
-    prisma.dailyProblem.create({
-      data: {
-        teamId,
-        date: today,
-        problemSetterId: user.id,
-        problemsData: parsed.data.problems,
-      },
-    }),
-    prisma.activityLog.create({
-      data: {
-        teamId,
-        userId: user.id,
-        type: "BECAME_SETTER",
-        message: `${user.name} set today's problems`,
-      },
-    }),
-  ]);
+  // Create or Update DailyProblem + log activity
+  await prisma.$transaction(async (tx) => {
+    if (existing) {
+      await tx.dailyProblem.update({
+        where: { id: existing.id },
+        data: { problemsData: parsed.data.problems },
+      });
+      await tx.activityLog.create({
+        data: {
+          teamId,
+          userId: user.id,
+          type: "BECAME_SETTER", // Repurposing type
+          message: `${user.name} edited ${dayName} problems`,
+        },
+      });
+    } else {
+      await tx.dailyProblem.create({
+        data: {
+          teamId,
+          date: targetDate,
+          problemSetterId: user.id,
+          problemsData: parsed.data.problems,
+        },
+      });
+      await tx.activityLog.create({
+        data: {
+          teamId,
+          userId: user.id,
+          type: "BECAME_SETTER",
+          message: `${user.name} set ${dayName} problems`,
+        },
+      });
+    }
+  });
 
   revalidatePath(`/team/${teamId}`);
   return { error: null };
@@ -322,6 +345,25 @@ export async function getTodaysProblems(teamId: string) {
   const today = getToday();
   return prisma.dailyProblem.findUnique({
     where: { teamId_date: { teamId, date: today } },
+    include: {
+      problemSetter: {
+        select: { id: true, name: true, username: true, avatarUrl: true },
+      },
+      completions: {
+        include: {
+          user: {
+            select: { id: true, name: true, username: true, avatarUrl: true },
+          },
+        },
+      },
+    },
+  });
+}
+
+export async function getTomorrowsProblems(teamId: string) {
+  const tomorrow = getTomorrow();
+  return prisma.dailyProblem.findUnique({
+    where: { teamId_date: { teamId, date: tomorrow } },
     include: {
       problemSetter: {
         select: { id: true, name: true, username: true, avatarUrl: true },

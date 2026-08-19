@@ -36,6 +36,8 @@ interface TodaysProblemsProps {
   currentUserId: string;
   setterName: string;
   isAdmin: boolean;
+  isTomorrow?: boolean;
+  editHref?: string;
 }
 
 export function TodaysProblems({
@@ -44,6 +46,8 @@ export function TodaysProblems({
   currentUserId,
   setterName,
   isAdmin,
+  isTomorrow,
+  editHref,
 }: TodaysProblemsProps) {
   const userCompletions = problems.completions.filter(
     (c) => c.userId === currentUserId
@@ -82,15 +86,17 @@ export function TodaysProblems({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
+      className={isTomorrow ? "opacity-80" : ""}
     >
-      <Card className={`border-border/50 ${isExtendedDisplay ? 'border-amber-500/30 bg-amber-500/5' : ''}`}>
+      <Card className={`border-border/50 ${isExtendedDisplay ? 'border-amber-500/30 bg-amber-500/5' : ''} ${isTomorrow ? 'border-dashed bg-slate-900/40' : ''}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CardTitle className="text-lg">
-                {isToday ? "Today's Problems" : `Extended Problems (${formatDate(problems.date)})`}
+              <CardTitle className="text-lg flex items-center gap-2">
+                {isTomorrow ? "Tomorrow's Problems" : isToday ? "Today's Problems" : `Extended Problems (${formatDate(problems.date)})`}
+                {isTomorrow && <span className="text-xs font-normal text-muted-foreground ml-2">(Visible only to you until midnight)</span>}
               </CardTitle>
-              {isExtendedDisplay && (
+              {isExtendedDisplay && !isTomorrow && (
                 <Badge variant="outline" className="text-amber-500 border-amber-500/30 bg-amber-500/10">
                   <Clock className="w-3 h-3 mr-1" /> Extended
                 </Badge>
@@ -100,7 +106,14 @@ export function TodaysProblems({
               <Badge variant="secondary" className="text-xs">
                 Set by {setterName}
               </Badge>
-              {canExtend && (
+              {canExtend && editHref && (
+                <a href={editHref}>
+                  <Button variant="outline" size="sm" className="text-xs h-6 px-2">
+                    Edit Problems
+                  </Button>
+                </a>
+              )}
+              {canExtend && !isTomorrow && (
                 <Button variant="outline" size="sm" onClick={handleExtend} disabled={isPending} className="text-xs h-6 px-2">
                   {isPending ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                   Extend +1 Day
@@ -137,7 +150,7 @@ export function TodaysProblems({
                   problemSlug={slug}
                   initialCompleted={completion?.completed ?? false}
                   initialUsedAI={completion?.usedLeetAI ?? false}
-                  isLocked={!!completion?.completedAt}
+                  isLocked={!!completion?.completedAt || !!isTomorrow}
                 />
               </div>
             );

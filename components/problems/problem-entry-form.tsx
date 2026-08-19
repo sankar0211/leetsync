@@ -11,18 +11,24 @@ import { Plus, Trash2 } from "lucide-react";
 
 interface ProblemEntryFormProps {
   teamId: string;
+  isTomorrow?: boolean;
+  initialProblems?: { number: number; name: string }[];
 }
 
-export function ProblemEntryForm({ teamId }: ProblemEntryFormProps) {
+export function ProblemEntryForm({ teamId, isTomorrow, initialProblems }: ProblemEntryFormProps) {
   const submitAction = submitDailyProblems.bind(null, teamId);
   const [state, formAction, isPending] = useActionState(submitAction, {
     error: null as string | null,
   });
 
-  const [problems, setProblems] = useState([
-    { number: "", name: "" },
-    { number: "", name: "" },
-  ]);
+  const [problems, setProblems] = useState(
+    initialProblems && initialProblems.length > 0 
+      ? initialProblems.map(p => ({ number: String(p.number), name: p.name }))
+      : [
+          { number: "", name: "" },
+          { number: "", name: "" },
+        ]
+  );
 
   const updateProblem = (index: number, field: "number" | "name", value: string) => {
     const newProblems = [...problems];
@@ -59,11 +65,12 @@ export function ProblemEntryForm({ teamId }: ProblemEntryFormProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <span>🎯</span>
-            <span>You&apos;re today&apos;s Problem Setter!</span>
+            <span>You&apos;re {isTomorrow ? "tomorrow's" : "today's"} Problem Setter!</span>
           </CardTitle>
         </CardHeader>
         <form action={formAction}>
           <input type="hidden" name="problemsData" value={problemsDataStr} />
+          {isTomorrow && <input type="hidden" name="isTomorrow" value="true" />}
           <CardContent className="space-y-6">
             {state.error && (
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">

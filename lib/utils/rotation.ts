@@ -36,6 +36,25 @@ export function getToday(): Date {
 }
 
 /**
+ * Get tomorrow's date as a Date with time zeroed out.
+ */
+export function getTomorrow(): Date {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tz = process.env.TIMEZONE || "Asia/Kolkata";
+  
+  const tzString = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(tomorrow);
+
+  const [month, day, year] = tzString.split("/");
+  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+}
+
+/**
  * Calculate the number of days between two dates (ignoring time).
  * Uses UTC methods to avoid daylight saving time or server locale issues.
  */
@@ -70,6 +89,29 @@ export function getTodaysSetter(
   const daysSinceCreation = daysBetween(teamCreatedAt, today);
 
   // Sort by rotationPosition to ensure deterministic order
+  const sortedMembers = [...members].sort(
+    (a, b) => a.rotationPosition - b.rotationPosition
+  );
+
+  const setterIndex =
+    ((daysSinceCreation % sortedMembers.length) + sortedMembers.length) %
+    sortedMembers.length;
+
+  return sortedMembers[setterIndex].userId;
+}
+
+/**
+ * Determine tomorrow's Problem Setter for a team.
+ */
+export function getTomorrowsSetter(
+  teamCreatedAt: Date,
+  members: RotationMember[]
+): string | null {
+  if (members.length === 0) return null;
+
+  const tomorrow = getTomorrow();
+  const daysSinceCreation = daysBetween(teamCreatedAt, tomorrow);
+
   const sortedMembers = [...members].sort(
     (a, b) => a.rotationPosition - b.rotationPosition
   );
