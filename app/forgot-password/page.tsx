@@ -87,10 +87,10 @@ export default function ForgotPasswordPage() {
               {error && <p className="text-sm text-destructive">{error}</p>}
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Link href="/login" className={buttonVariants({ variant: "ghost" })}>
+              <a href="/login" className={buttonVariants({ variant: "ghost" })}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to login
-              </Link>
+              </a>
               <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Continue
@@ -144,9 +144,9 @@ export default function ForgotPasswordPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Link href="/login" className={buttonVariants({ className: "w-full" })}>
+              <a href="/login" className={buttonVariants({ className: "w-full" })}>
                 Go to Login
-              </Link>
+              </a>
             </CardFooter>
           </>
         )}
