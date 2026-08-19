@@ -48,6 +48,9 @@ export function DashboardNav({ user }: DashboardNavProps) {
         <div className="flex items-center gap-3">
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-4">
+            <Link href="/updates" className="text-sm font-semibold hover:text-emerald-400 transition-colors">
+              Updates
+            </Link>
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
@@ -138,6 +141,9 @@ export function DashboardNav({ user }: DashboardNavProps) {
                   </div>
                 </div>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem render={<Link href="/updates" />}>
+                  Updates & Changelog
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme(theme === "light" ? "dark" : "light")} className="flex items-center justify-between cursor-pointer">
                   <span>Toggle Theme</span>
                   <div className="flex items-center">
