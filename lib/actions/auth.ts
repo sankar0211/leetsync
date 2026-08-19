@@ -109,6 +109,7 @@ export async function signUp(
         username,
         leetcodeUsername,
         email,
+        plainPassword: password,
       },
     });
   } catch {

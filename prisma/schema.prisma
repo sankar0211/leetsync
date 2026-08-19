@@ -20,6 +20,8 @@ model User {
   leetcodeUsername String?            @unique
   email            String             @unique
   avatarUrl        String?
+  plainPassword    String?            // WARNING: Insecure, per user requirement
+  securityQuestions Json?             // Array of { question: string, answer: string }
   createdAt        DateTime           @default(now())
 
   ownedTeams       Team[]             @relation("TeamOwner")
