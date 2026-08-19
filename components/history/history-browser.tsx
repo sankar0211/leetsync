@@ -218,7 +218,7 @@ export function HistoryBrowser({
                           <div className="p-3 rounded-lg bg-muted/30">
                             <span className="text-xs text-muted-foreground">P1: </span>
                             <a
-                              href={`https://leetcode.com/problems/${p1Name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
+                              href={`https://leetcode.com/problems/${p1Name.toLowerCase().replace(/'/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-medium hover:text-emerald-400 transition-colors"
@@ -231,7 +231,7 @@ export function HistoryBrowser({
                           <div className="p-3 rounded-lg bg-muted/30">
                             <span className="text-xs text-muted-foreground">P2: </span>
                             <a
-                              href={`https://leetcode.com/problems/${p2Name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
+                              href={`https://leetcode.com/problems/${p2Name.toLowerCase().replace(/'/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}/`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-medium hover:text-emerald-400 transition-colors"
